@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.webapp.mapper.employeMapper">
+    <!--    配置查询所有 id为方法名 resultType指定封装的实体类型-->
+    <select id="getEmployee" resultType="com.example.webapp.bean.Employe">
+       select e.*,d.deptname,da.dno from employee e,dept d, depall da where e.deptno=d.id and d.deptno=da.dno and e.deptno=#{deptId} order by e.employno limit #{page},#{size}
+    </select>
+    <select id="getEmoloyeByKeyWord" resultType="com.example.webapp.bean.Employe">
+select e.* ,d.deptname,da.dno from  employee e,dept d,depall da where e.employno like concat('%',#{keyword},'%') or e.employname like concat('%',#{keyword},'%')
+AND  e.deptno=d.id GROUP BY e.employno order by e.employno  limit #{page},#{size}
+    </select>
+    <select id="getKeyWordSearchCount" resultType="java.lang.Integer">
+    select count(DISTINCT e.employno) as count from  employee e,dept d where e.employno like concat('%',#{keyword},'%') or e.employname like concat('%',#{keyword},'%') AND  e.deptno=d.id
+    </select>
+
+</mapper>
+

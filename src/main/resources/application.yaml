@@ -1,0 +1,18 @@
+#设置静态资源路径  加了可能影响index 和ico
+spring:
+#  mvc:
+#    static-path-pattern: /res/**
+#  #    改变默认资源路径
+#  web:
+#    resources:
+#      static-locations: [classpath:/customstatic/]
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3307/vuets
+    username: root
+    password: luyuxi
+
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
