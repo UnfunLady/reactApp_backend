@@ -146,5 +146,27 @@ public class deptController {
         return map1;
     }
 
+    //    修改部门信息 （无头像）
+    @PostMapping("/api/editDeptNoAvatar")
+    public Map editDeptNoAvatar(@RequestBody Map<String, Depall> map) {
+        Map map1 = new HashMap();
+        if (map.get("editDeptData") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数");
+        } else {
+            Depall depall = map.get("editDeptData");
+            boolean update = depallService.update(new UpdateWrapper<Depall>().set("dname", depall.getDname()).set("`explain`", depall.getExplain()).eq("dno", depall.getDno()));
+            if (update) {
+                map1.put("code", 200);
+                map1.put("msg", "修改基本信息成功!");
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "修改基本信息失败!");
+            }
+        }
+
+
+        return map1;
+    }
 }
 
