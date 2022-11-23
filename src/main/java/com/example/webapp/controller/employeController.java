@@ -328,6 +328,21 @@ public class employeController {
         return map1;
     }
 
-
+    //    获取全部员工信息
+    @LoginToken
+    @GetMapping("/api/getAllEmploye")
+    public Map getAllEmploye() {
+        Map map = new HashMap();
+        List<Employe> list = employeService.getBaseMapper().selectList(new QueryWrapper<Employe>(null));
+        if (list != null) {
+            map.put("code",200);
+            map.put("employeInfo",list);
+            map.put("msg","获取员工成功！");
+        }else{
+            map.put("code",202);
+            map.put("msg","获取员工失败！");
+        }
+        return map;
+    }
 }
 
