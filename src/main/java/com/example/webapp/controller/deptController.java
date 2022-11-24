@@ -1,26 +1,24 @@
 package com.example.webapp.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.example.webapp.bean.Depall;
-import com.example.webapp.bean.Dept;
-import com.example.webapp.bean.Employe;
-import com.example.webapp.bean.EmployeSalary;
+import com.example.webapp.bean.*;
+import com.example.webapp.mapper.deptRedoMapper;
 import com.example.webapp.mapper.employeSalaryMapper;
 import com.example.webapp.service.depallService;
 import com.example.webapp.service.deptService;
 import com.example.webapp.service.employeService;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @RestController
 public class deptController {
@@ -32,8 +30,11 @@ public class deptController {
     employeSalaryMapper employeSalaryMapper;
     @Autowired
     employeService employeService;
+    @Autowired
+    deptRedoMapper deptRedoMapper;
 
     //    获取部门信息
+    @LoginToken
     @GetMapping("/api/deptInfo")
     public Map getDeptInfo() {
         Map map = new HashMap<>();
@@ -68,7 +69,7 @@ public class deptController {
         Map map = new HashMap<>();
         if (params.get("dno") != null) {
             List<Dept> list = deptService.getBaseMapper().selectList(new QueryWrapper<Dept>().eq("deptno", params.get("dno")));
-            if (list != null) {
+            if (list != null && list.size() > 0) {
                 map.put("code", 200);
                 map.put("msg", "操作成功！");
                 map.put("groupInfo", list);
@@ -92,13 +93,13 @@ public class deptController {
 //            获取团队下的薪资信息以及团队的小组信息
             List<EmployeSalary> list = employeSalaryMapper.selectList(new QueryWrapper<EmployeSalary>().eq("deptno", map.get("dno")));
             List<Dept> list1 = deptService.getBaseMapper().selectList(new QueryWrapper<Dept>().eq("deptno", map.get("dno")));
-            if (list != null && list1 != null) {
+            if (list != null && list.size() > 0 && list1 != null && list1.size() > 0) {
                 map1.put("code", 200);
                 map1.put("salaryInfo", list);
                 map1.put("DeptInfo", list1);
             } else {
                 map1.put("code", 202);
-                map1.put("msg", "获取薪资信息失败！");
+                map1.put("msg", "该部门号不存在！");
             }
 
         }
@@ -163,14 +164,22 @@ public class deptController {
             map1.put("msg", "缺少重要参数");
         } else {
             Depall depall = map.get("editDeptData");
-            boolean update = depallService.update(new UpdateWrapper<Depall>().set("dname", depall.getDname()).set("`explain`", depall.getExplain()).eq("dno", depall.getDno()));
-            if (update) {
-                map1.put("code", 200);
-                map1.put("msg", "修改基本信息成功!");
-            } else {
+            Depall isDepall = depallService.getBaseMapper().selectOne(new QueryWrapper<Depall>().eq("dname", depall.getDname()));
+            if (isDepall != null) {
                 map1.put("code", 202);
-                map1.put("msg", "修改基本信息失败!");
+                map1.put("msg", "已有相同部门存在！");
+            } else {
+                boolean update = depallService.update(new UpdateWrapper<Depall>().set("dname", depall.getDname()).set("`explain`", depall.getExplain()).eq("dno", depall.getDno()));
+                if (update) {
+                    map1.put("code", 200);
+                    map1.put("msg", "修改基本信息成功!");
+                } else {
+                    map1.put("code", 202);
+                    map1.put("msg", "修改基本信息失败!");
+                }
             }
+
+
         }
         return map1;
     }
@@ -188,29 +197,40 @@ public class deptController {
 //               获取到头像 然后将头像名字随机赋值 存到resources文件夹
                 String avatarName = "uploadAvatarZengYu" + (int) (Math.random() * 114514) + file.getOriginalFilename();
 //                设置存放文件路径
-                String publicPath = System.getProperty("user.dir") + "/src/main/resources/public/";
+                String publicPath = System.getProperty("user.dir") + "/src/main/resources/images/";
 //               判断文件是否同名存在
-                File isFile = new File("classpath:/public/", avatarName);
+                File isFile = new File("classpath:/images/", avatarName);
                 if (isFile.exists()) {
 //                如果存在相同文件 则修改文件名再存
                     avatarName = "uploadAvatarZengYu" + (int) (Math.random() * 114515) + "SAFE" + file.getOriginalFilename();
                     file.transferTo(new File(publicPath + avatarName));
 //                执行修改操作
-                    boolean update = depallService.update(new UpdateWrapper<Depall>().set("avatar", publicPath + avatarName).set("dname", map.get("dname"))
+                    boolean update = depallService.update(new UpdateWrapper<Depall>().set("avatar", "http://127.0.0.1:8888images/" + avatarName).set("dname", map.get("dname"))
                             .set("`explain`", map.get("explain")).eq("dno", Integer.parseInt(map.get("dno").toString())));
                     if (update) {
                         map1.put("code", 200);
                         map1.put("msg", "修改成功");
                     }
                 } else {
-                    file.transferTo(new File(publicPath + avatarName));
+
 //                执行修改操作
-                    boolean update = depallService.update(new UpdateWrapper<Depall>().set("avatar", publicPath + avatarName).set("dname", map.get("dname"))
-                            .set("`explain`", map.get("explain")).eq("dno", Integer.parseInt(map.get("dno").toString())));
-                    if (update) {
-                        map1.put("code", 200);
-                        map1.put("msg", "修改成功");
+                    Depall isDepall = depallService.getBaseMapper().selectOne(new QueryWrapper<Depall>().eq("dname", map.get("dname")));
+                    if (isDepall != null) {
+                        map1.put("code", 202);
+                        map1.put("msg", "已有相同部门存在！");
+                    } else {
+                        boolean update = depallService.update(new UpdateWrapper<Depall>().set("avatar", "http://127.0.0.1:8888/images/" + avatarName).set("dname", map.get("dname"))
+                                .set("`explain`", map.get("explain")).eq("dno", Integer.parseInt(map.get("dno").toString())));
+                        if (update) {
+                            map1.put("code", 200);
+                            map1.put("msg", "修改成功");
+                            file.transferTo(new File(publicPath + avatarName));
+                        } else {
+                            map1.put("code", 202);
+                            map1.put("msg", "修改失败!");
+                        }
                     }
+
                 }
             } else {
                 map1.put("code", 202);
@@ -262,6 +282,8 @@ public class deptController {
         return map1;
     }
 
+    //添加小组
+    @LoginToken
     @PostMapping("/api/addGroup")
     public Map addGroup(@RequestBody Map map) {
         Map map1 = new HashMap();
@@ -290,9 +312,9 @@ public class deptController {
                         for (Object i : employeList) {
                             count++;
                             List<Employe> employe = employeService.getBaseMapper().selectList(new QueryWrapper<Employe>().eq("employno", i));
-//                        修改员工所属id
-                            employe.get(0).setDeptno(dept2.getId());
-                            if (employe != null) {
+                            if (employe != null && employe.size() > 0) {
+                                //  修改员工所属id
+                                employe.get(0).setDeptno(dept2.getId());
 //                      插入员工到小组
                                 int insert1 = employeService.getBaseMapper().insert(employe.get(0));
                                 if (insert1 > 0) {
@@ -323,6 +345,251 @@ public class deptController {
                 }
             }
         }
+        return map1;
+    }
+
+    //    解散小组
+    @LoginToken
+    @PostMapping("/api/delGroup")
+    public Map delGroup(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("id") == null || map.get("user") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数");
+        } else {
+//            获取要删除的小组信息插入到备份表
+            Dept dept = deptService.getBaseMapper().selectOne(new QueryWrapper<Dept>().eq("id", map.get("id")));
+            if (dept == null) {
+                map1.put("code", 202);
+                map1.put("msg", "该小组信息不存在");
+            } else {
+                //        获取当前操作时间
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date date = new Date();
+                String nowDate = dateFormat.format(date);
+//                准备信息插入备份表
+                DeptRedo deptRedo = new DeptRedo();
+                deptRedo.setId(dept.getId());
+                deptRedo.setDeptno(dept.getDeptno());
+                deptRedo.setCount(dept.getCount());
+                deptRedo.setLocation(dept.getLocation());
+                deptRedo.setDeptname(dept.getDeptname());
+                deptRedo.setCountCovid(dept.getCountCovid());
+                deptRedo.setConfirmTime(nowDate);
+                deptRedo.setWhichDone(map.get("user").toString());
+                int insert = deptRedoMapper.insert(deptRedo);
+                if (insert > 0) {
+//                    查询小组剩下的员工
+                    List<Employe> employeList = employeService.getBaseMapper().selectList(new QueryWrapper<Employe>().eq("deptno", map.get("id")));
+                    if (employeList != null && employeList.size() > 0) {
+//                  如果员工不为空 先删除完再删除小组 否则直接删除小组
+                        int count = 0, successCount = 0;
+                        for (Employe e : employeList) {
+                            count++;
+                            int delete = employeService.getBaseMapper().delete(new UpdateWrapper<Employe>().eq("employno", e.getEmployno()).eq("deptno", map.get("id")));
+                            if (delete > 0) {
+                                successCount++;
+                            }
+                        }
+                        if (count == successCount) {
+                            System.out.println(count);
+                            System.out.println(successCount);
+//                  如果员工都删除完了就删除小组
+                            int delete = deptService.getBaseMapper().delete(new UpdateWrapper<Dept>().eq("id", map.get("id")));
+                            if (delete > 0) {
+                                map1.put("code", 200);
+                                map1.put("msg", "删除小组成功！");
+                            } else {
+//                      败了则清空备份表数据
+                                deptRedoMapper.delete(new UpdateWrapper<DeptRedo>().eq("id", deptRedo.getId()).eq("deptno", deptRedo.getDeptno()));
+                                map1.put("code", 202);
+                                map1.put("msg", "删除小组失败！");
+                            }
+                        } else {
+//                           失败了则清空备份表数据
+                            deptRedoMapper.delete(new UpdateWrapper<DeptRedo>().eq("id", deptRedo.getId()).eq("deptno", deptRedo.getDeptno()));
+                            map1.put("code", 202);
+                            map1.put("msg", "删除小组失败！");
+                        }
+                    } else {
+//                    直接删除小组
+                        int delete = deptService.getBaseMapper().delete(new UpdateWrapper<Dept>().eq("id", map.get("id")));
+                        if (delete > 0) {
+                            map1.put("code", 200);
+                            map1.put("msg", "删除小组成功！");
+                        } else {
+                            deptRedoMapper.delete(new UpdateWrapper<DeptRedo>().eq("id", deptRedo.getId()).eq("deptno", deptRedo.getDeptno()));
+                            map1.put("code", 202);
+                            map1.put("msg", "删除小组失败！");
+                        }
+                    }
+                } else {
+                    map1.put("code", 202);
+                    map1.put("msg", "删除小组失败！");
+                }
+
+            }
+        }
+        return map1;
+    }
+
+    //    解散部门
+    @LoginToken
+    @PostMapping("/api/delDept")
+    public Map delDept(@RequestBody Map map) {
+        Map map1 = new HashMap();
+        if (map.get("dno") == null || map.get("children") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数");
+        } else {
+//            转换格式
+            List<Dept> childrenList = JSONObject.parseArray(JSONObject.toJSONString(map.get("children"))).toJavaList(Dept.class);
+            Integer dno = Integer.parseInt(map.get("dno").toString());
+            if (childrenList != null && childrenList.size() > 0) {
+//              说明还有小组 先删除小组
+//            遍历部门下的所有小组 搜索小组下的全部员工 删除掉后再删除小组 直到小组删除完毕再删除部门
+                int dCount = 0, dSuccessCount = 0;
+                for (Dept d : childrenList) {
+                    dCount++;
+                    List<Employe> employeList = employeService.getBaseMapper().selectList(new QueryWrapper<Employe>().eq("deptno", d.getId()));
+                    if (employeList != null && employeList.size() > 0) {
+                        int eCount = 0, eSuccessCount = 0;
+//                    小组还有员工 先删完员工
+                        for (Employe e : employeList) {
+                            eCount++;
+                            int deleteEmploye = employeService.getBaseMapper().delete(new UpdateWrapper<Employe>().eq("employno", e.getEmployno()).eq("deptno", e.getDeptno()));
+                            System.out.println("deleteEmploye:" + deleteEmploye);
+                            if (deleteEmploye > 0) {
+                                eSuccessCount++;
+                            }
+                        }
+                        if (eCount == eSuccessCount && eSuccessCount != 0) {
+                            System.out.println(dCount);
+                            System.out.println(eCount);
+                            System.out.println(eSuccessCount);
+//                        删除完了员工之后删除小组
+                            int deleteDept = deptService.getBaseMapper().delete(new UpdateWrapper<Dept>().eq("id", d.getId()));
+                            if (deleteDept > 0) {
+//                       说明删除小组成功
+                                dSuccessCount++;
+                            } else {
+                                map1.put("code", 202);
+                                map1.put("msg", "删除失败！");
+                            }
+                        } else {
+                            map1.put("code", 202);
+                            map1.put("msg", "删除出错！");
+                        }
+                    } else {
+//                    没有员工了
+                        int deleteDept = deptService.getBaseMapper().delete(new UpdateWrapper<Dept>().eq("id", d.getId()));
+                        if (deleteDept > 0) {
+//                       说明删除小组成功
+                            dSuccessCount++;
+                        } else {
+                            map1.put("code", 202);
+                            map1.put("msg", "删除失败！");
+                        }
+                    }
+                }
+                if (dCount == dSuccessCount) {
+//                说明全部小组删除完毕  执行删除部门
+                    int deleteDepall = depallService.getBaseMapper().delete(new UpdateWrapper<Depall>().eq("dno", dno));
+                    if (deleteDepall > 0) {
+                        map1.put("code", 200);
+                        map1.put("msg", "删除部门成功!");
+                    } else {
+                        map1.put("code", 202);
+                        map1.put("msg", "删除部门出错!");
+                    }
+                }
+            } else {
+//                没有小组了 直接删除部门
+                int deleteDepall = depallService.getBaseMapper().delete(new UpdateWrapper<Depall>().eq("dno", dno));
+                if (deleteDepall > 0) {
+                    map1.put("code", 200);
+                    map1.put("msg", "删除部门成功!");
+                } else {
+                    map1.put("code", 202);
+                    map1.put("msg", "删除部门出错!");
+                }
+            }
+
+        }
+
+        return map1;
+    }
+
+    //    新增部门
+    @LoginToken
+    @PostMapping("/api/addDeptpartment")
+    public Map addDeptpartment(@RequestParam Map map, @RequestParam("file") MultipartFile file) throws IOException {
+        Map map1 = new HashMap();
+        if ((map.get("dname") == null && map.get("dname").toString().length() == 0) || (map.get("explain") == null && map.get("explain").toString().length() == 0)) {
+            map1.put("code", 201);
+            map1.put("msg", "缺少重要参数");
+        } else {
+            if (!file.isEmpty()) {
+//               获取到头像 然后将头像名字随机赋值 存到resources文件夹
+                String avatarName = "uploadDeptAvatarZengYu" + (int) (Math.random() * 114514) + file.getOriginalFilename();
+//                设置存放文件路径
+                String publicPath = System.getProperty("user.dir") + "/src/main/resources/images/";
+//               判断文件是否同名存在
+                File isFile = new File("classpath:/images/", avatarName);
+                if (isFile.exists()) {
+//                如果存在相同文件 则修改文件名再存
+                    avatarName = "uploadDeptAvatarZengYu" + (int) (Math.random() * 114515) + "SAFE" + file.getOriginalFilename();
+//                执行新增操作
+                    Depall depall = new Depall();
+                    depall.setDname(map.get("dname").toString());
+                    depall.setExplain(map.get("explain").toString());
+                    depall.setAvatar("http://127.0.0.1:8888/images/" + avatarName);
+//                    先判断有没有重复部门名
+                    Depall isDepall = depallService.getBaseMapper().selectOne(new QueryWrapper<Depall>().eq("dname", map.get("dname")));
+                    if (isDepall != null) {
+                        map1.put("code", 202);
+                        map1.put("msg", "已有相同部门存在！");
+                    } else {
+                        int insert = depallService.getBaseMapper().insert(depall);
+                        if (insert > 0) {
+                            map1.put("code", 200);
+                            map1.put("msg", "添加部门成功！");
+                            file.transferTo(new File(publicPath + avatarName));
+                        } else {
+                            map1.put("code", 202);
+                            map1.put("msg", "添加部门失败！");
+                        }
+                    }
+                } else {
+
+//                执行新增操作
+                    Depall depall = new Depall();
+                    depall.setDname(map.get("dname").toString());
+                    depall.setExplain(map.get("explain").toString());
+                    depall.setAvatar("http://127.0.0.1:8888/images/" + avatarName);
+                    Depall isDepall = depallService.getBaseMapper().selectOne(new QueryWrapper<Depall>().eq("dname", map.get("dname")));
+                    if (isDepall != null) {
+                        map1.put("code", 202);
+                        map1.put("msg", "已有相同部门存在！");
+                    } else {
+                        int insert = depallService.getBaseMapper().insert(depall);
+                        if (insert > 0) {
+                            map1.put("code", 200);
+                            map1.put("msg", "添加部门成功！");
+                            file.transferTo(new File(publicPath + avatarName));
+                        } else {
+                            map1.put("code", 202);
+                            map1.put("msg", "添加部门失败！");
+                        }
+                    }
+
+                }
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "缺少图片参数");
+            }
+        }
+
         return map1;
     }
 }

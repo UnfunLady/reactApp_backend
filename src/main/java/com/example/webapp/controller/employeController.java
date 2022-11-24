@@ -38,7 +38,7 @@ public class employeController {
             } else {
                 List<Employe> list = employeService.getEmployee(Integer.parseInt(params.get("deptId")), (Integer.parseInt(params.get("page")) - 1) * Integer.parseInt(params.get("size")),
                         Integer.parseInt(params.get("size")));
-                if (list != null) {
+                if (list != null && list.size() > 0) {
                     Dept dept = deptService.getBaseMapper().selectOne(new QueryWrapper<Dept>().select("count").eq("id", params.get("deptId")));
                     if (dept != null) {
                         map.put("code", 200);
@@ -244,7 +244,7 @@ public class employeController {
             List<Employe> emoloyes = employeService.getEmoloyeByKeyWord(map.get("keyword").toString(), (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString()), Integer.parseInt(map.get("size").toString()));
             //获取一共有几个
             Integer count = employeService.getKeyWordSearchCount(map.get("keyword").toString());
-            if (emoloyes != null && count != 0) {
+            if (emoloyes != null && emoloyes.size() > 0 && count != 0) {
                 map1.put("code", 200);
                 map1.put("msg", "查找成功!");
                 map1.put("employeInfo", emoloyes);
@@ -277,7 +277,7 @@ public class employeController {
                 List<EmployeSalary> detailList = employeSalaryDetailMapper.getDetail(Integer.parseInt(map.get("deptid").toString()));
 //             获取部门员工数
                 Integer count = employeSalaryDetailMapper.getCount(Integer.parseInt(map.get("deptid").toString()));
-                if (list != null && detailList.get(0) != null && count > 0) {
+                if (list != null && list.size() > 0 && detailList != null && detailList.size() > 0 && count > 0) {
                     map1.put("code", 200);
                     map1.put("msg", "查询成功！");
                     map1.put("detailInfo", list);
@@ -334,13 +334,13 @@ public class employeController {
     public Map getAllEmploye() {
         Map map = new HashMap();
         List<Employe> list = employeService.getBaseMapper().selectList(new QueryWrapper<Employe>(null));
-        if (list != null) {
-            map.put("code",200);
-            map.put("employeInfo",list);
-            map.put("msg","获取员工成功！");
-        }else{
-            map.put("code",202);
-            map.put("msg","获取员工失败！");
+        if (list != null && list.size() > 0) {
+            map.put("code", 200);
+            map.put("employeInfo", list);
+            map.put("msg", "获取员工成功！");
+        } else {
+            map.put("code", 202);
+            map.put("msg", "获取员工失败！");
         }
         return map;
     }

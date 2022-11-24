@@ -2,10 +2,10 @@
 spring:
 #  mvc:
 #    static-path-pattern: /res/**
-#  #    改变默认资源路径
-#  web:
-#    resources:
-#      static-locations: [classpath:/customstatic/]
+  #    改变默认资源路径
+  web:
+    resources:
+      static-locations: [classpath:/images/]
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3307/vuets

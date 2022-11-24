@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class Depall {
     private Integer dno;
     private String dname;
+    @TableField("`explain`")
     private String explain;
     private String avatar;
     private Integer count;
