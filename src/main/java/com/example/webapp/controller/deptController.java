@@ -3,7 +3,9 @@ package com.example.webapp.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.webapp.bean.*;
+import com.example.webapp.mapper.covidInfoMapper;
 import com.example.webapp.mapper.deptRedoMapper;
 import com.example.webapp.mapper.employeSalaryMapper;
 import com.example.webapp.service.depallService;
@@ -32,6 +34,8 @@ public class deptController {
     employeService employeService;
     @Autowired
     deptRedoMapper deptRedoMapper;
+    @Autowired
+    covidInfoMapper covidInfoMapper;
 
     //    获取部门信息
     @LoginToken
@@ -592,5 +596,178 @@ public class deptController {
 
         return map1;
     }
+
+    //    获取部门接种信息
+    @LoginToken
+    @GetMapping("/api/getCompanyEvilInfo")
+    public Map getCompanyEvilInfo() {
+        Map map = new HashMap();
+        List<Map<String, String>> companyEvilInfo = depallService.getCompanyEvilInfo();
+        if (companyEvilInfo != null && companyEvilInfo.size() > 0) {
+            map.put("code", 200);
+            map.put("deptInfo", companyEvilInfo);
+        } else {
+            map.put("code", 202);
+            map.put("msg", "获取接种信息失败!");
+        }
+        return map;
+    }
+
+    //    获取部门接种获取相关员工信息
+    @LoginToken
+    @GetMapping("/api/getEmployeEvilInfo")
+    public Map getEmployeEvilInfo(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("dno") == null || map.get("page") == null || map.get("size") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "获取信息失败!");
+        } else {
+            // 未接种完毕的员工信息
+            Integer page = (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString());
+            List<Employe> employeList = employeService.getEmployeNoCovid(Integer.parseInt(map.get("dno").toString()), page, Integer.parseInt(map.get("size").toString()));
+            if (employeList != null && employeList.size() > 0) {
+                //获取具体接种信息
+                List<CovidInfo> covidInfoList = covidInfoMapper.getEmployeDetailCovidInfo(Integer.parseInt(map.get("dno").toString()));
+                if (covidInfoList != null && covidInfoList.size() > 0) {
+                    map1.put("code", 200);
+                    map1.put("employeInfo", employeList);
+                    map1.put("employeCount", employeList.size());
+                    map1.put("evilInfo", covidInfoList);
+                    map1.put("evilCount", covidInfoList.size());
+                } else {
+                    map1.put("code", 200);
+                    map1.put("employeCount", JSONObject.parse("[]"));
+                    map1.put("employeCount", 0);
+                    map1.put("evilInfo", JSONObject.parse("[]"));
+                    map1.put("evilCount", 0);
+                }
+            } else {
+                map1.put("code", 200);
+                map1.put("employeInfo", null);
+                map1.put("employeCount", JSONObject.parse("[]"));
+                map1.put("evilInfo", JSONObject.parse("[]"));
+                map1.put("evilCount", 0);
+            }
+        }
+
+        return map1;
+    }
+
+    // 获取部门全部员工接种信息
+    @LoginToken
+    @GetMapping("/api/getAllEmployeEvilInfo")
+    public Map getAllEmployeEvilInfo(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("dno") == null || map.get("page") == null || map.get("size") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "获取信息失败!");
+        } else {
+            Integer page = (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString());
+            List<AllEmoloyeEvilInfo> allEmoloyeEvilInfoList = covidInfoMapper.getAllEmployeEvilInfo(Integer.parseInt(map.get("dno").toString()), page, Integer.parseInt(map.get("size").toString()));
+            if (allEmoloyeEvilInfoList != null && allEmoloyeEvilInfoList.size() > 0) {
+                // 获取总数
+                Integer allEmployeCount = covidInfoMapper.getAllEmployeCount(Integer.parseInt(map.get("dno").toString()));
+                if (allEmployeCount > 0) {
+                    map1.put("code", 200);
+                    map1.put("allEmployeEvilInfo", allEmoloyeEvilInfoList);
+                    map1.put("count", allEmployeCount);
+                } else {
+                    map1.put("code", 202);
+                    map1.put("msg", "获取员工信息失败!");
+                }
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "暂无任何员工信息!");
+            }
+        }
+        return map1;
+    }
+
+    // 修改接种信息
+    @LoginToken
+    @PostMapping("/api/updateEmployeEvilInfo")
+    public Map updateEmployeEvilInfo(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("depallid") == null || map.get("deptid") == null || map.get("employno") == null || map.get("firstInoculation") == null || map.get("secondInoculation") == null || map.get("threeInoculation") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数!");
+        } else {
+            CovidInfo covidInfo = new CovidInfo();
+            covidInfo.setDepallid(Integer.parseInt(map.get("depallid").toString()));
+            covidInfo.setDeptid(Integer.parseInt(map.get("deptid").toString()));
+            covidInfo.setEmployid(Integer.parseInt(map.get("employno").toString()));
+            covidInfo.setFirstInoculation(map.get("firstInoculation").toString());
+            covidInfo.setSecondInoculation(map.get("secondInoculation").toString());
+            covidInfo.setThreeInoculation(map.get("threeInoculation").toString());
+            int update = covidInfoMapper.update(covidInfo, new UpdateWrapper<CovidInfo>().set("depallid", covidInfo.getDepallid())
+                    .set("firstInoculation", covidInfo.getFirstInoculation()).set("secondInoculation", covidInfo.getSecondInoculation())
+                    .set("threeInoculation", covidInfo.getThreeInoculation()).eq("deptid", covidInfo.getDeptid()).eq("employid", covidInfo.getEmployid()));
+            if (update > 0) {
+                map1.put("code", 200);
+                map1.put("msg", "修改成功!");
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "修改失败!");
+            }
+        }
+        return map1;
+    }
+
+    // 查看删除的小组
+    @LoginToken
+    @GetMapping("/api/getRecoverGroup")
+    public Map getRecoverGroup(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("page") == null || map.get("size") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少参数！");
+        } else {
+            Page<DeptRedo> Page = new Page<>(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
+            Page<DeptRedo> deptRedoPage = deptRedoMapper.selectPage(Page, new QueryWrapper<DeptRedo>(null));
+            if (deptRedoPage != null && deptRedoPage.getTotal() > 0) {
+                List<DeptRedo> deptRedoList = deptRedoPage.getRecords();
+                Integer count = deptRedoMapper.selectCount(new QueryWrapper<DeptRedo>(null));
+                map1.put("code", 200);
+                map1.put("results", deptRedoList);
+                map1.put("count", count);
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "暂无删除的员工");
+            }
+        }
+        return map1;
+    }
+
+    //    撤回删除的小组
+    @PostMapping("/api/recoverGroup")
+    @LoginToken
+    public Map recoverGroup(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("id") == null || map.get("deptno") == null || map.get("deptname") == null || map.get("location") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少参数！");
+        } else {
+            int delete = deptRedoMapper.delete(new UpdateWrapper<DeptRedo>().eq("id", Integer.parseInt(map.get("id").toString())).eq("deptno", Integer.parseInt(map.get("deptno").toString())));
+            if (delete > 0) {
+                Dept dept = new Dept();
+                dept.setDeptno(Integer.parseInt(map.get("deptno").toString()));
+                dept.setLocation(map.get("location").toString());
+                dept.setDeptname(map.get("deptname").toString());
+                dept.setId(Integer.parseInt(map.get("id").toString()));
+                dept.setCount(0);
+                dept.setCountCovid(0);
+                int insert = deptService.getBaseMapper().insert(dept);
+                if (insert > 0) {
+                    map1.put("code", 200);
+                    map1.put("msg", "恢复小组成功！");
+                } else {
+                    map1.put("code", 202);
+                    map1.put("msg", "恢复小组失败！");
+                }
+            }
+        }
+        return map1;
+    }
+
 }
 

@@ -28,4 +28,9 @@ public class employeServiceImpl extends ServiceImpl<employeMapper, Employe> impl
     public Integer getKeyWordSearchCount(String keyword) {
         return employeMapper.getKeyWordSearchCount(keyword);
     }
+
+    @Override
+    public List<Employe> getEmployeNoCovid(Integer dno, Integer page, Integer size) {
+        return employeMapper.getEmployeNoCovid(dno,page,size);
+    }
 }

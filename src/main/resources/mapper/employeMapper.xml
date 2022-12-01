@@ -14,6 +14,11 @@ AND  e.deptno=d.id GROUP BY e.employno order by e.employno  limit #{page},#{size
     <select id="getKeyWordSearchCount" resultType="java.lang.Integer">
     select count(DISTINCT e.employno) as count from  employee e,dept d where e.employno like concat('%',#{keyword},'%') or e.employname like concat('%',#{keyword},'%') AND  e.deptno=d.id
     </select>
+    <select id="getEmployeNoCovid" resultType="com.example.webapp.bean.Employe">
+        SELECT DISTINCT e.*from employee e,dept d WHERE e.employno
+in (select c.employid from covidinfo c WHERE c.depallid=#{dno} AND threeInoculation='false' )
+AND e.deptno=d.id  AND d.deptno=#{dno} limit #{page},#{size}
+    </select>
 
 </mapper>
 

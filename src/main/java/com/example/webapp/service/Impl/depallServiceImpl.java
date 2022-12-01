@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class depallServiceImpl extends ServiceImpl<depallMapper, Depall> implements depallService {
@@ -17,4 +18,10 @@ public class depallServiceImpl extends ServiceImpl<depallMapper, Depall> impleme
     public List<Depall> getAllDepall() {
         return depallMapper.getAllDepall();
     }
+
+    @Override
+    public List<Map<String, String>> getCompanyEvilInfo() {
+        return depallMapper.getCompanyEvilInfo();
+    }
+
 }

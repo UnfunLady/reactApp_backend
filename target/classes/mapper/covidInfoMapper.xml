@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.webapp.mapper.covidInfoMapper">
+
+    <select id="getEmployeDetailCovidInfo" resultType="com.example.webapp.bean.CovidInfo">
+        select c.* from covidinfo c ,dept d WHERE c.employid
+in (select c.employid from covidinfo c WHERE c.depallid=#{dno} AND threeInoculation='false')
+AND c.deptid=d.id AND d.deptno=#{dno}
+    </select>
+
+    <select id="getAllEmployeEvilInfo" resultType="com.example.webapp.bean.AllEmoloyeEvilInfo">
+        SELECT DISTINCT e.*,co.deptid,co.depallid,co.firstInoculation,co.secondInoculation,co.threeInoculation from employee e,dept d,covidinfo co WHERE e.employno
+in (select c.employid from covidinfo c WHERE c.depallid=#{dno})
+AND e.deptno=d.id  AND co.depallid=d.deptno AND d.deptno=#{dno} AND e.employno=co.employid ORDER BY e.employno asc
+limit #{page},#{size}
+    </select>
+    <select id="getAllEmployeCount" resultType="java.lang.Integer">
+        SELECT DISTINCT count(e.employno) as count from employee e,dept d,covidinfo co WHERE e.employno
+in (select c.employid from covidinfo c WHERE c.depallid=#{dno} )
+AND e.deptno=d.id  AND co.depallid=d.deptno AND d.deptno=#{dno} AND e.employno=co.employid ORDER BY e.employno asc
+    </select>
+</mapper>
+

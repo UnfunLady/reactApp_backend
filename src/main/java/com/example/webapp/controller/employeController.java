@@ -2,6 +2,7 @@ package com.example.webapp.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.webapp.bean.*;
 import com.example.webapp.mapper.employeReDoMapper;
 import com.example.webapp.mapper.employeSalaryDetailMapper;
@@ -299,7 +300,7 @@ public class employeController {
     @PostMapping("/api/updateSalaryDetail")
     public Map updateSalaryDetail(@RequestBody ArrayList<EmployeSalaryDetail> list) {
         Map map1 = new HashMap();
-        if (list.get(0) == null) {
+        if (list.size() == 0 || list.get(0) == null) {
             map1.put("code", 202);
             map1.put("msg", "参数异常！");
         } else {
@@ -343,6 +344,79 @@ public class employeController {
             map.put("msg", "获取员工失败！");
         }
         return map;
+    }
+
+    //查看删除的员工信息
+    @LoginToken
+    @GetMapping("/api/getDeletedEmploye")
+    public Map getDeletedEmploye(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("page") == null || map.get("size") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少参数！");
+        } else {
+            Page<EmployeRedo> userPage = new Page<>(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
+            Page<EmployeRedo> employeRedoPage = employeReDoMapper.selectPage(userPage, new QueryWrapper<EmployeRedo>(null));
+            if (employeRedoPage != null && employeRedoPage.getTotal() > 0) {
+                List<EmployeRedo> EmployeRedoList = employeRedoPage.getRecords();
+                Integer count = employeReDoMapper.selectCount(new QueryWrapper<EmployeRedo>(null));
+                map1.put("code", 200);
+                map1.put("results", EmployeRedoList);
+                map1.put("count", count);
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "暂无删除的员工");
+            }
+
+        }
+
+
+        return map1;
+    }
+
+    // 撤回删除的员工操作
+    @LoginToken
+    @PostMapping("/api/rebackEmploye")
+    public Map rebackEmploye(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("deptno") == null || map.get("employno") == null || map.get("employname") == null || map.get("employage") == null
+                || map.get("employsex") == null || map.get("employidcard") == null || map.get("employphone") == null || map.get("employemail") == null
+                || map.get("entryDate") == null || map.get("employsalary") == null || map.get("employaddress") == null || map.get("isuse") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少参数！");
+        } else {
+            Employe employe = new Employe();
+            employe.setDeptno(Integer.parseInt(map.get("deptno").toString()));
+            employe.setIsuse(map.get("isuse").toString());
+            employe.setEntryDate(map.get("entryDate").toString());
+            employe.setEmploysex(map.get("employsex").toString());
+            employe.setEmploysalary(map.get("employsalary").toString());
+            employe.setEmployphone(map.get("employphone").toString());
+            employe.setEmployno(Integer.parseInt(map.get("employno").toString()));
+            employe.setEmployname(map.get("employname").toString());
+            employe.setEmployidcard(map.get("employidcard").toString());
+            employe.setEmployemail(map.get("employemail").toString());
+            employe.setEmployage(map.get("employage").toString());
+            employe.setEmployaddress(map.get("employaddress").toString());
+//            删除备份表数据
+            int delete = employeReDoMapper.delete(new QueryWrapper<EmployeRedo>()
+                    .eq("employno", Integer.parseInt(map.get("employno").toString())).eq("deptno", Integer.parseInt(map.get("deptno").toString())));
+            if (delete > 0) {
+//                恢复员工数据
+                int insert = employeService.getBaseMapper().insert(employe);
+                if (insert > 0) {
+                    map1.put("code", 200);
+                    map1.put("msg", "恢复成功！");
+                } else {
+                    map1.put("code", 202);
+                    map1.put("msg", "恢复失败！");
+                }
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "恢复失败！");
+            }
+        }
+        return map1;
     }
 }
 
