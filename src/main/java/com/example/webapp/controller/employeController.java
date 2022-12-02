@@ -37,7 +37,7 @@ public class employeController {
                 map.put("code", 202);
                 map.put("msg", "参数出错！");
             } else {
-                List<Employe> list = employeService.getEmployee(Integer.parseInt(params.get("deptId")), (Integer.parseInt(params.get("page")) - 1) * Integer.parseInt(params.get("size")),
+                List<Map<String, String>> list = employeService.getEmployee(Integer.parseInt(params.get("deptId")), (Integer.parseInt(params.get("page")) - 1) * Integer.parseInt(params.get("size")),
                         Integer.parseInt(params.get("size")));
                 if (list != null && list.size() > 0) {
                     Dept dept = deptService.getBaseMapper().selectOne(new QueryWrapper<Dept>().select("count").eq("id", params.get("deptId")));
@@ -271,7 +271,7 @@ public class employeController {
                 map1.put("code", 202);
                 map1.put("msg", "参数出错！");
             } else {
-                Integer page = (Integer.parseInt(map.get("page").toString()) * Integer.parseInt(map.get("size").toString()));
+                Integer page = ((Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString()));
 //                获取员工信息
                 List<EmployeSalaryDetail> list = employeSalaryDetailMapper.getEmployeSalaryByPage(Integer.parseInt(map.get("deptid").toString()), page, Integer.parseInt(map.get("size").toString()));
 //                获取补贴信息

@@ -24,4 +24,6 @@ public class EmployeSalaryDetail {
     private Integer usePerformance;
     private Integer salary;
     private String isuse;
+    @TableField(exist = false)
+    private String deptname;
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class employeServiceImpl extends ServiceImpl<employeMapper, Employe> implements employeService {
@@ -15,7 +16,22 @@ public class employeServiceImpl extends ServiceImpl<employeMapper, Employe> impl
     employeMapper employeMapper;
 
     @Override
-    public List<Employe> getEmployee(Integer deptId, Integer page, Integer size) {
+    public Integer getCount() {
+        return employeMapper.getCount();
+    }
+
+    @Override
+    public Integer getSalaryAVG() {
+        return employeMapper.getSalaryAVG();
+    }
+
+    @Override
+    public Integer getManCount() {
+        return employeMapper.getManCount();
+    }
+
+    @Override
+    public List<Map<String, String>> getEmployee(Integer deptId, Integer page, Integer size) {
         return employeMapper.getEmployee(deptId, page, size);
     }
 

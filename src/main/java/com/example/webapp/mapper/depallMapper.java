@@ -11,6 +11,10 @@ import java.util.Map;
 
 @Mapper
 public interface depallMapper extends BaseMapper<Depall> {
+    //    获取部门总数
+    @Select("SELECT count(d.dno)as companyDeptCount from depall d")
+    Integer getCount();
+
     @Select("SELECT dno,dname,d.explain,avatar,count,groupCount,isAllcovid,noCovid FROM depall d")
     List<Depall> getAllDepall();
 

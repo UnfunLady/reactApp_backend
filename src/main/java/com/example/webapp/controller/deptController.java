@@ -7,18 +7,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.webapp.bean.*;
 import com.example.webapp.mapper.covidInfoMapper;
 import com.example.webapp.mapper.deptRedoMapper;
+import com.example.webapp.mapper.employeSalaryDetailMapper;
 import com.example.webapp.mapper.employeSalaryMapper;
 import com.example.webapp.service.depallService;
 import com.example.webapp.service.deptService;
 import com.example.webapp.service.employeService;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -36,6 +36,39 @@ public class deptController {
     deptRedoMapper deptRedoMapper;
     @Autowired
     covidInfoMapper covidInfoMapper;
+    @Autowired
+    employeSalaryDetailMapper employeSalaryDetailMapper;
+
+    //获取部门细节
+    @LoginToken
+    @GetMapping("/api/companyDetail")
+    public Map companyDetail() {
+        Map map = new HashMap();
+        Map detailData = new HashMap();
+        //获取部门总数
+        int depallCount = depallService.getCount();
+        // 获取小组总数
+        int deptCount = deptService.getCount();
+        // 获取员工总数
+        int employeCount = employeService.getCount();
+        // 获取平均薪资
+        int salaryAVG = employeService.getSalaryAVG();
+        // 获取男性人数
+        int manCount = employeService.getManCount();
+        //计算比例
+        NumberFormat numberFormat = NumberFormat.getInstance();
+        numberFormat.setMaximumFractionDigits(2);
+        String Percentage = numberFormat.format((float) manCount / (float) employeCount * 100) + "%";
+        detailData.put("companyDeptCount", depallCount);
+        detailData.put("companyGroupCount", deptCount);
+        detailData.put("companyEmployeCount", employeCount);
+        detailData.put("companyAvgSalary", salaryAVG);
+        detailData.put("BoyGrilsPercentage", Percentage);
+        map.put("code", 200);
+        map.put("detailData", detailData);
+
+        return map;
+    }
 
     //    获取部门信息
     @LoginToken
@@ -63,6 +96,25 @@ public class deptController {
             map.put("msg", "操作失败！");
         }
 
+        return map;
+    }
+
+    //    获取省市相关
+    @LoginToken
+    @GetMapping("/api/getProvinceCity")
+    public Map getProvinceCity() throws IOException {
+        Map map = new HashMap();
+//        读取文件  改路径
+        Reader reader = new InputStreamReader(new FileInputStream("C:\\Users\\Administrator\\Desktop\\test\\webapp\\src\\main\\java\\com\\example\\webapp\\util\\province.txt"),
+                "Utf-8");
+        int ch = 0;
+        StringBuffer sb = new StringBuffer();
+        while ((ch = reader.read()) != -1) {
+            sb.append((char) ch);
+        }
+        reader.close();
+        map.put("code", 200);
+        map.put("districts", JSONObject.parseArray(sb.toString()));
         return map;
     }
 
@@ -100,7 +152,7 @@ public class deptController {
             if (list != null && list.size() > 0 && list1 != null && list1.size() > 0) {
                 map1.put("code", 200);
                 map1.put("salaryInfo", list);
-                map1.put("DeptInfo", list1);
+                map1.put("deptInfo", list1);
             } else {
                 map1.put("code", 202);
                 map1.put("msg", "该部门号不存在！");
@@ -125,9 +177,12 @@ public class deptController {
                 map1.put("msg", "关键信息缺失或错误!");
             } else {
                 EmployeSalary employeSalary = new EmployeSalary();
+                EmployeSalaryDetail employeSalaryDetail = new EmployeSalaryDetail();
+                employeSalaryDetail.setUsePerformance(Integer.parseInt(map.get("performance").toString()));
                 employeSalary.setPerformance(Integer.parseInt(map.get("performance").toString()));
                 int update = employeSalaryMapper.update(employeSalary, new UpdateWrapper<EmployeSalary>().eq("deptid", map.get("performanceId")));
-                if (update > 0) {
+                int update1 = employeSalaryDetailMapper.update(employeSalaryDetail, new UpdateWrapper<EmployeSalaryDetail>().eq("deptno", map.get("performanceId")));
+                if (update > 0 && update1 > 0) {
                     map1.put("code", 200);
                     map1.put("msg", "修改绩效成功!");
                 } else {
@@ -141,8 +196,11 @@ public class deptController {
                 EmployeSalary employeSalary = new EmployeSalary();
                 employeSalary.setIsuse(map.get("editIsuse").toString());
                 employeSalary.setDeptid(Integer.parseInt(map.get("editIsuseId").toString()));
+                EmployeSalaryDetail employeSalaryDetail = new EmployeSalaryDetail();
+                employeSalaryDetail.setUsePerformance(Integer.parseInt(map.get("performance").toString()));
                 int update = employeSalaryMapper.update(employeSalary, new UpdateWrapper<EmployeSalary>().eq("deptid", map.get("editIsuseId")));
-                if (update > 0) {
+                int update1 = employeSalaryDetailMapper.update(employeSalaryDetail, new UpdateWrapper<EmployeSalaryDetail>().eq("deptno", map.get("editIsuseId")));
+                if (update > 0 && update1 > 0) {
                     map1.put("code", 200);
                     map1.put("msg", "修改薪资信息成功!");
                 } else {

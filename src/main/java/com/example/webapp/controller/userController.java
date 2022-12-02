@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.webapp.bean.Users;
 import com.example.webapp.mapper.usersMapper;
+import com.example.webapp.service.usersService;
 import com.example.webapp.util.LoginToken;
+import com.example.webapp.util.SignToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +20,9 @@ import java.util.Map;
 public class userController {
     @Autowired
     usersMapper usersMapper;
+    @Autowired
+    usersService usersService;
+
     //    修改密码
     @LoginToken
     @PostMapping("/api/editPassword")
@@ -52,4 +57,24 @@ public class userController {
         }
         return map1;
     }
+
+    @PostMapping("/api/login")
+    public Map loginController(@RequestBody  Map<String, String> loginData) {
+        Map<String, Object> map = new HashMap<>();
+        Users users = usersService.getUserByNameWord(loginData.get("username"), loginData.get("password"));
+        if (users != null && loginData.get("username") != "" && loginData.get("password") != "") {
+            String token = SignToken.getToken(users);
+            map.put("code", 200);
+            map.put("msg", "账号密码验证成功！");
+            map.put("Info", users);
+            map.put("token", token);
+            return map;
+        } else {
+            map.put("code", 201);
+            map.put("msg", "参数接受失败！");
+            return map;
+        }
+    }
+
+
 }

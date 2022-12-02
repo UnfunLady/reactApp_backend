@@ -14,6 +14,12 @@ import java.util.Map;
 public class depallServiceImpl extends ServiceImpl<depallMapper, Depall> implements depallService {
     @Resource
     depallMapper depallMapper;
+
+    @Override
+    public Integer getCount() {
+        return depallMapper.getCount();
+    }
+
     @Override
     public List<Depall> getAllDepall() {
         return depallMapper.getAllDepall();
