@@ -24,9 +24,12 @@ public interface employeMapper extends BaseMapper<Employe> {
     //    获取部门下全部员工信息
     @MapKey("employno")
     List<Map<String, String>> getEmployee(Integer deptId, Integer page, Integer size);
-
+//        获取全部员工信息
+    @Select("select DISTINCT employee.employno as 'key',employee.employname as 'label' from employee order by employee.employno")
+    List<Map<String,String>> getEmployeDistinct();
     //    关键字获取员工信息
-    List<Employe> getEmoloyeByKeyWord(String keyword, Integer page, Integer size);
+    @MapKey("employno")
+    List<Map<String,String>> getEmoloyeByKeyWord(String keyword, Integer page, Integer size);
 
     //    关键字获取时要获取的总员工数量
     Integer getKeyWordSearchCount(String keyword);

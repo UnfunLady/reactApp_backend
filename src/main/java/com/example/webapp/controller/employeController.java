@@ -242,7 +242,7 @@ public class employeController {
             map1.put("msg", "缺少重要参数!");
         } else {
             //根据关键字查找人
-            List<Employe> emoloyes = employeService.getEmoloyeByKeyWord(map.get("keyword").toString(), (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString()), Integer.parseInt(map.get("size").toString()));
+            List<Map<String,String>> emoloyes = employeService.getEmoloyeByKeyWord(map.get("keyword").toString(), (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString()), Integer.parseInt(map.get("size").toString()));
             //获取一共有几个
             Integer count = employeService.getKeyWordSearchCount(map.get("keyword").toString());
             if (emoloyes != null && emoloyes.size() > 0 && count != 0) {
@@ -334,7 +334,7 @@ public class employeController {
     @GetMapping("/api/getAllEmploye")
     public Map getAllEmploye() {
         Map map = new HashMap();
-        List<Employe> list = employeService.getBaseMapper().selectList(new QueryWrapper<Employe>(null));
+        List<Map<String, String>> list = employeService.getEmployeDistinct();
         if (list != null && list.size() > 0) {
             map.put("code", 200);
             map.put("employeInfo", list);
@@ -377,7 +377,7 @@ public class employeController {
     // 撤回删除的员工操作
     @LoginToken
     @PostMapping("/api/rebackEmploye")
-    public Map rebackEmploye(@RequestParam Map map) {
+    public Map rebackEmploye(@RequestBody Map map) {
         Map map1 = new HashMap();
         if (map.get("deptno") == null || map.get("employno") == null || map.get("employname") == null || map.get("employage") == null
                 || map.get("employsex") == null || map.get("employidcard") == null || map.get("employphone") == null || map.get("employemail") == null

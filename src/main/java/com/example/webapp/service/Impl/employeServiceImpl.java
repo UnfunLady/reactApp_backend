@@ -36,8 +36,13 @@ public class employeServiceImpl extends ServiceImpl<employeMapper, Employe> impl
     }
 
     @Override
-    public List<Employe> getEmoloyeByKeyWord(String keyword, Integer page, Integer size) {
+    public List<Map<String,String>> getEmoloyeByKeyWord(String keyword, Integer page, Integer size) {
         return employeMapper.getEmoloyeByKeyWord(keyword, page, size);
+    }
+
+    @Override
+    public List<Map<String, String>> getEmployeDistinct() {
+        return employeMapper.getEmployeDistinct();
     }
 
     @Override

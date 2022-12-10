@@ -7,7 +7,7 @@
     <select id="getEmployee" resultType="java.util.HashMap">
        select e.*,d.deptname,da.dno from employee e,dept d, depall da where e.deptno=d.id and d.deptno=da.dno and e.deptno=#{deptId} order by e.employno limit #{page},#{size}
     </select>
-    <select id="getEmoloyeByKeyWord" resultType="com.example.webapp.bean.Employe">
+    <select id="getEmoloyeByKeyWord" resultType="java.util.HashMap">
 select e.* ,d.deptname,da.dno from  employee e,dept d,depall da where e.employno like concat('%',#{keyword},'%') or e.employname like concat('%',#{keyword},'%')
 AND  e.deptno=d.id GROUP BY e.employno order by e.employno  limit #{page},#{size}
     </select>

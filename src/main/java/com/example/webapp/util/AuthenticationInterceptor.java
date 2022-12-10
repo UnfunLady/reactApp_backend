@@ -41,17 +41,17 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                     SignToken.verify(token);
                     return true;
                 } catch (TokenExpiredException e) {
-                    map.put("code", 201);
+                    map.put("code", 203);
                     map.put("msg", "Token已经过期!");
                 } catch (SignatureVerificationException e) {
-                    map.put("code", 201);
+                    map.put("code", 203);
                     map.put("msg", "签名错误!");
                 } catch (AlgorithmMismatchException e) {
-                    map.put("code", 201);
+                    map.put("code", 203);
                     map.put("msg", "加密算法不匹配!");
                 } catch (Exception e) {
-                    map.put("code", 201);
-                    map.put("msg", "无效token!");
+                    map.put("code", 203);
+                    map.put("msg", "无用户登录令牌(token)!");
                 }
                 String json = new ObjectMapper().writeValueAsString(map);
                 httpServletResponse.setContentType("application/json;charset=UTF-8");
