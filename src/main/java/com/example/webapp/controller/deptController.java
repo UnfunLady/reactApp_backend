@@ -1,6 +1,5 @@
 package com.example.webapp.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -272,8 +271,6 @@ public class deptController {
     @LoginToken
     @PostMapping("/api/editDeptR")
     public Map editDeptR(@RequestParam Map map, @RequestParam("file") MultipartFile file) throws IOException {
-        System.out.println(map);
-        System.out.println(file);
         Map map1 = new HashMap();
         if (map.get("dno") == null || map.get("dname") == null || map.get("explain") == null) {
             map1.put("code", 202);
@@ -288,14 +285,37 @@ public class deptController {
                 File isFile = new File("classpath:/images/", avatarName);
                 if (isFile.exists()) {
 //                如果存在相同文件 则修改文件名再存
-                    avatarName = "uploadAvatarZengYu" + (int) (Math.random() * 114515) + "SAFE" + file.getOriginalFilename();
+                    avatarName = "uploadDeptAvatarZengYu" + (int) (Math.random() * 114515) + "SAFE" + file.getOriginalFilename();
                     file.transferTo(new File(publicPath + avatarName));
 //                执行修改操作
-                    boolean update = depallService.update(new UpdateWrapper<Depall>().set("avatar", "http://127.0.0.1:8888images/" + avatarName).set("dname", map.get("dname"))
-                            .set("`explain`", map.get("explain")).eq("dno", Integer.parseInt(map.get("dno").toString())));
-                    if (update) {
-                        map1.put("code", 200);
-                        map1.put("msg", "修改成功");
+                    if (map.get("notName") != null && Boolean.parseBoolean(map.get("notName").toString())) {
+                        boolean update = depallService.update(new UpdateWrapper<Depall>().set("avatar", "http://127.0.0.1:8888/images/" + avatarName).set("dname", map.get("dname"))
+                                .set("`explain`", map.get("explain")).eq("dno", Integer.parseInt(map.get("dno").toString())));
+                        if (update) {
+                            map1.put("code", 200);
+                            map1.put("msg", "修改成功");
+                            file.transferTo(new File(publicPath + avatarName));
+                        } else {
+                            map1.put("code", 202);
+                            map1.put("msg", "修改失败!");
+                        }
+                    } else {
+                        Depall isDepall = depallService.getBaseMapper().selectOne(new QueryWrapper<Depall>().eq("dname", map.get("dname")));
+                        if (isDepall != null) {
+                            map1.put("code", 202);
+                            map1.put("msg", "已有相同部门存在！");
+                        } else {
+                            boolean update = depallService.update(new UpdateWrapper<Depall>().set("avatar", "http://127.0.0.1:8888/images/" + avatarName).set("dname", map.get("dname"))
+                                    .set("`explain`", map.get("explain")).eq("dno", Integer.parseInt(map.get("dno").toString())));
+                            if (update) {
+                                map1.put("code", 200);
+                                map1.put("msg", "修改成功");
+                                file.transferTo(new File(publicPath + avatarName));
+                            } else {
+                                map1.put("code", 202);
+                                map1.put("msg", "修改失败!");
+                            }
+                        }
                     }
                 } else {
 //                执行修改操作

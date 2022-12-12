@@ -48,11 +48,11 @@ public class employeController {
                         map.put("count", dept.getCount());
                     } else {
                         map.put("code", 202);
-                        map.put("msg", "操作失败！");
+                        map.put("msg", "该部门暂无员工！");
                     }
                 } else {
                     map.put("code", 202);
-                    map.put("msg", "操作失败！");
+                    map.put("msg", "该部门暂无员工！");
                 }
             }
 

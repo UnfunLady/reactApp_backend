@@ -11,5 +11,6 @@ public class ImageUploadConfig implements WebMvcConfigurer {
 //        配置虚拟路径 不然上传图片后需要重启项目才能加到target里 显示不了图片
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:"+System.getProperty("user.dir")+"/src/main/resources/images/");
+
     }
 }
