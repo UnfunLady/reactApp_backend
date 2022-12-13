@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.webapp.mapper.clockMapper">
+    <!--    配置查询所有 id为方法名 resultType指定封装的实体类型-->
+    <select id="getTodayInfoGroupDepall" resultType="java.util.HashMap">
+      SELECT c.dno ,d.dname,count(*) as clockCount,d.count AS deptCount FROM clockemploye c, depall d WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno GROUP BY c.dno
+    </select>
+
+
+</mapper>
+
