@@ -15,4 +15,5 @@ public interface employeService extends IService<Employe> {
     List<Map<String,String>> getEmployeDistinct();
     Integer getKeyWordSearchCount(String keyword);
     List<Employe> getEmployeNoCovid(Integer dno, Integer page, Integer size);
+    List<Map<String, String>> getEmployeInfo(Integer employeno);
 }

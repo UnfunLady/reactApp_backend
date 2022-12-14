@@ -3,8 +3,8 @@ package com.example.webapp.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.webapp.bean.DeptRedo;
 import com.example.webapp.bean.EmployeLeave;
+import com.example.webapp.mapper.clockMapper;
 import com.example.webapp.mapper.employeLeaveMapper;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,9 @@ import java.util.Map;
 public class attendanceController {
     @Autowired
     employeLeaveMapper employeLeaveMapper;
+
+    @Autowired
+    clockMapper clockMapper;
 
     //    获取请假申请
     @LoginToken
@@ -71,10 +74,21 @@ public class attendanceController {
     }
 
     //   打卡情况
+    @LoginToken
     @GetMapping("/api/getClockInfo")
     public Map clockInfo() {
         Map map = new HashMap();
-
+        List<Map<String, String>> todayAllInfo = clockMapper.getTodayAllInfo();
+//        上下班打卡情况
+        List<Map<String, String>> todayInfoGroupDepall = clockMapper.getTodayInfoGroupDepall();
+        if (todayAllInfo != null && todayAllInfo.size() > 0 && todayInfoGroupDepall != null && todayInfoGroupDepall.size() > 0) {
+            map.put("code", 200);
+            map.put("todayAllInfo", todayAllInfo);
+            map.put("todayInfoGroupDepall", todayInfoGroupDepall);
+        } else {
+            map.put("code", 202);
+            map.put("msg", "暂无今日打卡信息");
+        }
         return map;
     }
 

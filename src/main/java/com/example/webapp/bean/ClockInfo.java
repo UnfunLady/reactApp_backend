@@ -17,4 +17,5 @@ public class ClockInfo {
     private String type;
     private String clockTime;
     private String location;
+    private String avatar;
 }

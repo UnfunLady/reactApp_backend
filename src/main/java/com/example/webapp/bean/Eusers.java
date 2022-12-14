@@ -1,6 +1,5 @@
 package com.example.webapp.bean;
 
-
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +8,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("user")
-public class user {
-    private  String name;
-    private Integer id;
-    private  Integer age;
+@TableName("eusers")
+public class Eusers {
+    private String username;
+    private String password;
+    private String isLock;
+    private String level;
+    private String avatar;
+    private String nickname;
 }

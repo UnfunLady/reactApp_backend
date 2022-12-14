@@ -8,6 +8,7 @@ import com.example.webapp.mapper.employeReDoMapper;
 import com.example.webapp.mapper.employeSalaryDetailMapper;
 import com.example.webapp.service.deptService;
 import com.example.webapp.service.employeService;
+import com.example.webapp.util.LoginEmployeToken;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -242,7 +243,7 @@ public class employeController {
             map1.put("msg", "缺少重要参数!");
         } else {
             //根据关键字查找人
-            List<Map<String,String>> emoloyes = employeService.getEmoloyeByKeyWord(map.get("keyword").toString(), (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString()), Integer.parseInt(map.get("size").toString()));
+            List<Map<String, String>> emoloyes = employeService.getEmoloyeByKeyWord(map.get("keyword").toString(), (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString()), Integer.parseInt(map.get("size").toString()));
             //获取一共有几个
             Integer count = employeService.getKeyWordSearchCount(map.get("keyword").toString());
             if (emoloyes != null && emoloyes.size() > 0 && count != 0) {
@@ -417,6 +418,29 @@ public class employeController {
             }
         }
         return map1;
+    }
+
+
+    //    获取员工信息
+    @LoginEmployeToken
+    @PostMapping("/api/getEmployeInfo")
+    public Map getEmployeInfo(@RequestBody Map map1) {
+        Map map = new HashMap();
+        if (map1.get("employeno") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少参数！");
+        } else {
+            List<Map<String, String>> employeInfo = employeService.getEmployeInfo(Integer.parseInt(map1.get("employeno").toString()));
+            if (employeInfo != null && employeInfo.size() > 0) {
+                map.put("code", 202);
+                map.put("employeInfo", employeInfo);
+            } else {
+                map.put("code", 202);
+                map.put("msg", "获取信息失败！");
+            }
+        }
+
+        return map;
     }
 }
 

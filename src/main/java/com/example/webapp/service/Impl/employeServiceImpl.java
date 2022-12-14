@@ -54,4 +54,9 @@ public class employeServiceImpl extends ServiceImpl<employeMapper, Employe> impl
     public List<Employe> getEmployeNoCovid(Integer dno, Integer page, Integer size) {
         return employeMapper.getEmployeNoCovid(dno,page,size);
     }
+
+    @Override
+    public List<Map<String, String>> getEmployeInfo(Integer employeno) {
+        return employeMapper.getEmployeInfo(employeno);
+    }
 }

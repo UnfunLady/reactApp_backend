@@ -3,7 +3,9 @@ package com.example.webapp.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.webapp.bean.Depall;
+import com.example.webapp.bean.Eusers;
 import com.example.webapp.bean.Users;
+import com.example.webapp.mapper.euserMapper;
 import com.example.webapp.mapper.usersMapper;
 import com.example.webapp.service.usersService;
 import com.example.webapp.util.LoginToken;
@@ -26,6 +28,8 @@ public class userController {
     usersMapper usersMapper;
     @Autowired
     usersService usersService;
+    @Autowired
+    euserMapper euserMapper;
 
     //    修改密码
     @LoginToken
@@ -138,6 +142,7 @@ public class userController {
         return map1;
     }
 
+    //登陆
     @PostMapping("/api/login")
     public Map loginController(@RequestBody Map loginData) {
         Map<String, Object> map = new HashMap<>();
@@ -146,7 +151,7 @@ public class userController {
             map.put("msg", "缺少重要参数");
         } else {
             Users users = usersService.getUserByNameWord(loginData.get("username").toString(), loginData.get("password").toString());
-            System.out.println(users);
+            Eusers eusers = euserMapper.getUserByNameWord(loginData.get("username").toString(), loginData.get("password").toString());
             if (users != null) {
                 String token = SignToken.getToken(users);
                 map.put("code", 200);
@@ -154,12 +159,19 @@ public class userController {
                 map.put("Info", users);
                 map.put("token", token);
             } else {
-                map.put("code", 201);
-                map.put("msg", "账号密码错误！");
+                if (eusers != null) {
+                    String token = SignToken.getTokenEmploye(eusers);
+                    map.put("code", 200);
+                    map.put("msg", "账号密码验证成功！");
+                    map.put("Info", eusers);
+                    map.put("token", token);
+                } else {
+                    map.put("code", 201);
+                    map.put("msg", "账号密码错误！");
+                }
             }
         }
         return map;
-
     }
 
 

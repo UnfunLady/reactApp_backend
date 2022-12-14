@@ -20,5 +20,12 @@ in (select c.employid from covidinfo c WHERE c.depallid=#{dno} AND threeInoculat
 AND e.deptno=d.id  AND d.deptno=#{dno} limit #{page},#{size}
     </select>
 
+    <select id="getEmployeInfo" resultType="java.util.HashMap">
+select e.employno,e.employage,e.employaddress,e.employemail,e.employidcard,e.employname,e.employsex,e.employphone,e.employsalary,e.entryDate ,
+d.id,d.deptname,d.location,d.count,dp.dname,dp.`explain`,dp.count as depallCount,dp.groupCount,dp.isAllCovid from employee e,dept d ,depall dp where e.employno=#{employeno}
+ AND e.deptno=d.id  AND d.id in (select e.deptno from employee e where e.employno=#{employeno} ) AND d.deptno=dp.dno
+
+    </select>
+
 </mapper>
 
