@@ -3,13 +3,17 @@ package com.example.webapp.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.webapp.bean.Depall;
+import com.example.webapp.bean.Dept;
 import com.example.webapp.bean.EmployeLeave;
 import com.example.webapp.mapper.clockMapper;
 import com.example.webapp.mapper.employeLeaveMapper;
+import com.example.webapp.util.LoginEmployeToken;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +25,71 @@ public class attendanceController {
 
     @Autowired
     clockMapper clockMapper;
+
+    //员工获取属于自己的部门
+//    获取部门信息
+    @LoginEmployeToken
+    @PostMapping("/api/deptInfoE")
+    public Map getDepallEmploye(@RequestBody Map map1) {
+        Map map = new HashMap<>();
+        if (map1.get("employeno") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少请求参数");
+        } else {
+            List<Map<String, String>> deptInfo = employeLeaveMapper.getDepallByEmployno(Integer.parseInt(map1.get("employeno").toString()));
+            if (deptInfo != null && deptInfo.size() > 0) {
+                map.put("code", 200);
+                map.put("deptInfo", deptInfo);
+            } else {
+                map.put("code", 202);
+                map.put("msg", "获取所在部门信息失败");
+            }
+        }
+        return map;
+    }
+
+    //    获取小组信息
+    @LoginEmployeToken
+    @PostMapping("/api/getGroupE")
+    public Map getDeptEmploye(@RequestBody Map map1) {
+        Map map = new HashMap<>();
+        if (map1.get("employeno") == null || map1.get("dno") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少请求参数");
+        } else {
+            List<Map<String, String>> groupInfo = employeLeaveMapper.getDeptByEmploynoAndDno(Integer.parseInt(map1.get("employeno").toString()), Integer.parseInt(map1.get("dno").toString()));
+            if (groupInfo != null && groupInfo.size() > 0) {
+                map.put("code", 200);
+                map.put("groupInfo", groupInfo);
+            } else {
+                map.put("code", 202);
+                map.put("msg", "获取小组信息失败");
+            }
+        }
+        return map;
+    }
+
+    //    获取员工姓名
+    @LoginEmployeToken
+    @PostMapping("/api/reqGetEmployName")
+    public Map getEmployeName(@RequestBody Map map1) {
+        Map map = new HashMap<>();
+        if (map1.get("employeno") == null || map1.get("deptId") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少请求参数");
+        } else {
+            List<Map<String, String>> employeInfo = employeLeaveMapper.getEmployeName(Integer.parseInt(map1.get("employeno").toString()), Integer.parseInt(map1.get("deptId").toString()));
+            if (employeInfo != null && employeInfo.size() > 0) {
+                map.put("code", 200);
+                map.put("employeInfo", employeInfo);
+            } else {
+                map.put("code", 202);
+                map.put("msg", "获取员工信息失败");
+            }
+        }
+        return map;
+    }
+
 
     //    获取请假申请
     @LoginToken
@@ -91,5 +160,6 @@ public class attendanceController {
         }
         return map;
     }
+
 
 }

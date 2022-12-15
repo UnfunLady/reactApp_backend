@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.webapp.mapper.employeLeaveMapper">
+    <!--    配置查询所有 id为方法名 resultType指定封装的实体类型-->
+    <select id="getDepallByEmployno" resultType="java.util.HashMap">
+   SELECT d.dno,d.dname FROM `depall` d where dno in (select deptno from dept where id in (select deptno from employee WHERE employno=#{employeno}))
+
+    </select>
+    <select id="getDeptByEmploynoAndDno" resultType="java.util.HashMap">
+select d.id,d.deptname from dept d where    d.deptno=#{dno} AND d.id in(select deptno from employee WHERE employno=#{employeno})
+    </select>
+    <select id="getEmployeName" resultType="java.util.HashMap">
+select e.employno,e.employname from employee e WHERE employno=#{employeno} and deptno=#{deptId}
+    </select>
+
+
+</mapper>
+

@@ -19,4 +19,7 @@ public interface clockMapper extends BaseMapper<ClockInfo> {
     @MapKey("")
 //    获取今日部门打卡信息
     List<Map<String, String>> getTodayInfoGroupDepall();
+
+
+
 }
