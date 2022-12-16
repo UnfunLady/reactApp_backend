@@ -432,7 +432,7 @@ public class employeController {
         } else {
             List<Map<String, String>> employeInfo = employeService.getEmployeInfo(Integer.parseInt(map1.get("employeno").toString()));
             if (employeInfo != null && employeInfo.size() > 0) {
-                map.put("code", 202);
+                map.put("code", 200);
                 map.put("employeInfo", employeInfo);
             } else {
                 map.put("code", 202);

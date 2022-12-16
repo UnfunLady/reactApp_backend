@@ -90,6 +90,58 @@ public class attendanceController {
         return map;
     }
 
+    //请假申请
+    @LoginEmployeToken
+    @PostMapping("/api/reqAddLeave")
+    public Map addLeave(@RequestBody Map map1) {
+        Map map = new HashMap<>();
+        if (map1.get("deptid") == null || map1.get("dno") == null || map1.get("employename") == null || map1.get("employeno") == null ||
+                map1.get("leaveLong") == null || map1.get("leaveWhen") == null || map1.get("whyLeave") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少请求参数");
+        } else {
+            EmployeLeave employeLeave = new EmployeLeave();
+            employeLeave.setDeptid(Integer.parseInt(map1.get("deptid").toString()));
+            employeLeave.setDno(Integer.parseInt(map1.get("dno").toString()));
+            employeLeave.setEmployeno(Integer.parseInt(map1.get("employeno").toString()));
+            employeLeave.setLeaveLong(map1.get("leaveLong").toString());
+            employeLeave.setLeaveWhen(map1.get("leaveWhen").toString());
+            employeLeave.setWhyLeave(map1.get("whyLeave").toString());
+            employeLeave.setEmployename(map1.get("employename").toString());
+            int insert = employeLeaveMapper.insert(employeLeave);
+            if (insert > 0) {
+                map.put("code", 200);
+                map.put("msg", "申请成功");
+            } else {
+                map.put("code", 202);
+                map.put("msg", "申请失败");
+            }
+        }
+        return map;
+    }
+
+    //    员工获取请假申请
+    @LoginEmployeToken
+    @PostMapping("/api/getEmployeLeaveInfo")
+    public Map getEmployeLeaveInfo(@RequestBody Map map1) {
+        Map map = new HashMap<>();
+        if (map1.get("employeno") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少请求参数");
+        } else {
+            List<EmployeLeave> employeLeaveListInfo = employeLeaveMapper.selectList(new QueryWrapper<EmployeLeave>(null).eq("employeno", Integer.parseInt(map1.get("employeno").toString())));
+            if (employeLeaveListInfo != null && employeLeaveListInfo.size() > 0) {
+                map.put("code", 200);
+                map.put("employeLeaveListInfo", employeLeaveListInfo);
+                map.put("count", employeLeaveListInfo.size());
+            } else {
+                map.put("code", 202);
+                map.put("msg", "获取请假信息失败");
+            }
+        }
+        return map;
+    }
+
 
     //    获取请假申请
     @LoginToken
