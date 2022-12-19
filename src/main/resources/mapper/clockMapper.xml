@@ -9,6 +9,12 @@
 ) as clockAfterCount  FROM clockemploye c, depall d WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno AND c.type="上午"	GROUP BY c.dno
     </select>
 
+    <select id="isClockMorning" resultType="com.example.webapp.bean.ClockInfo">
+SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockTime, '%Y-%m-%d')=#{clockTime} AND type ="上午"
+    </select>
 
+    <select id="isClockAfter" resultType="com.example.webapp.bean.ClockInfo">
+SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockTime, '%Y-%m-%d')=#{clockTime} AND type ="下午"
+    </select>
 </mapper>
 

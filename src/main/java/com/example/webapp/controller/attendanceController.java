@@ -3,6 +3,7 @@ package com.example.webapp.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.webapp.bean.ClockInfo;
 import com.example.webapp.bean.Depall;
 import com.example.webapp.bean.Dept;
 import com.example.webapp.bean.EmployeLeave;
@@ -142,6 +143,66 @@ public class attendanceController {
         return map;
     }
 
+    //判断员工是否打了卡
+    @LoginEmployeToken
+    @PostMapping("/api/clockMorning")
+    public Map clockInfo(@RequestBody Map map) {
+        Map map1 = new HashMap();
+        if (map.get("employeno") == null || map.get("clockTime") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少请求参数");
+        } else {
+            List<ClockInfo> clockMorning = clockMapper.isClockMorning(Integer.parseInt(map.get("employeno").toString()), map.get("clockTime").toString());
+            List<ClockInfo> clockAfter = clockMapper.isClockAfter(Integer.parseInt(map.get("employeno").toString()), map.get("clockTime").toString());
+            if (clockMorning != null && clockMorning.size() > 0) {
+                map1.put("code", 200);
+                map1.put("clockMorning", true);
+                if (clockAfter != null && clockAfter.size() > 0) {
+                    map1.put("clockAfter", true);
+                } else {
+                    map1.put("clockAfter", false);
+                }
+            } else {
+                map1.put("code", 200);
+                map1.put("clockMorning", false);
+                if (clockAfter != null && clockAfter.size() > 0) {
+                    map1.put("clockAfter", true);
+                } else {
+                    map1.put("clockAfter", false);
+                }
+            }
+        }
+        return map1;
+    }
+
+    //    添加打卡信息
+    @LoginEmployeToken
+    @PostMapping("/api/saveclock")
+    public Map saveClock(@RequestBody Map map) {
+        Map map1 = new HashMap();
+        if (map.get("dno") == null || map.get("deptid") == null || map.get("employeno") == null || map.get("employename") == null
+                || map.get("type") == null || map.get("clockTime") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少请求参数");
+        } else {
+            ClockInfo clockInfo = new ClockInfo();
+            clockInfo.setDno(Integer.parseInt(map.get("dno").toString()));
+            clockInfo.setDeptid(Integer.parseInt(map.get("deptid").toString()));
+            clockInfo.setEmployeno(Integer.parseInt(map.get("employeno").toString()));
+            clockInfo.setEmployename(map.get("employename").toString());
+            clockInfo.setType(map.get("type").toString());
+            clockInfo.setClockTime(map.get("clockTime").toString());
+            int insert = clockMapper.insert(clockInfo);
+            if (insert > 0) {
+                map1.put("code", 200);
+                map1.put("msg", "打卡成功");
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "打卡失败");
+            }
+        }
+        return map1;
+    }
 
     //    获取请假申请
     @LoginToken
@@ -167,6 +228,7 @@ public class attendanceController {
         }
         return map1;
     }
+
 
     //    审批员工请假
     @LoginToken

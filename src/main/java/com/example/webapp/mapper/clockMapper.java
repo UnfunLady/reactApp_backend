@@ -9,10 +9,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+
 @Component
 @Mapper
 public interface clockMapper extends BaseMapper<ClockInfo> {
-//    获取今日全员打卡情况
+    //    获取今日全员打卡情况
     @Select("SELECT * FROM clockemploye WHERE TO_DAYS(clocktime) =TO_DAYS(NOW())")
     List<Map<String, String>> getTodayAllInfo();
 
@@ -21,5 +22,8 @@ public interface clockMapper extends BaseMapper<ClockInfo> {
     List<Map<String, String>> getTodayInfoGroupDepall();
 
 
+    List<ClockInfo> isClockMorning(Integer employeno,String clockTime);
+
+    List<ClockInfo> isClockAfter(Integer employeno,String clockTime);
 
 }
