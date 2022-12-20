@@ -4,11 +4,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.webapp.mapper.clockMapper">
     <!--    配置查询所有 id为方法名 resultType指定封装的实体类型-->
-    <select id="getTodayInfoGroupDepall" resultType="java.util.HashMap">
-      SELECT c.dno ,d.dname,count(DISTINCT c.employeno) as clockMorningCount,d.count AS deptCount,(SELECT count(DISTINCT c.employeno) as clockAfterCount FROM clockemploye c, depall d WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno AND c.type="下午"	GROUP BY c.dno
-) as clockAfterCount  FROM clockemploye c, depall d WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno AND c.type="上午"	GROUP BY c.dno
-    </select>
-
     <select id="isClockMorning" resultType="com.example.webapp.bean.ClockInfo">
 SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockTime, '%Y-%m-%d')=#{clockTime} AND type ="上午"
     </select>
@@ -16,5 +11,24 @@ SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockT
     <select id="isClockAfter" resultType="com.example.webapp.bean.ClockInfo">
 SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockTime, '%Y-%m-%d')=#{clockTime} AND type ="下午"
     </select>
+    <select id="getTodayMorningInfo" resultType="java.util.HashMap">
+      SELECT c.dno ,d.dname,cd.allClockMorning,count(DISTINCT c.employeno) as clockMorningCount,d.count AS depalltCount FROM clockemploye c, depall d,clockdepall cd WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno AND cd.dno=c.dno AND c.type="上午" GROUP BY c.dno
+    </select>
+
+    <select id="getTodayAfterInfo" resultType="java.util.HashMap">
+      SELECT c.dno ,d.dname,cd.allClockAfter,count(DISTINCT c.employeno) as clockMorningCount,d.count AS depalltCount FROM clockemploye c, depall d,clockdepall cd WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno AND cd.dno=c.dno AND c.type="下午" GROUP BY c.dno
+    </select>
+    <select id="getMonthClockCount" resultType="java.util.HashMap">
+select count(employeno)from clockemploye where DATE_FORMAT(clockTime,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m');
+    </select>
+    <select id="getMonthClockDelayCount" resultType="java.util.HashMap">
+SELECT count(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')>'09:00:00' AND type="上午" AND DATE_FORMAT(clockTime,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m');
+    </select>
+    <select id="getTodayAllClockInfo" resultType="java.util.HashMap">
+SELECT cd.clockDay,cd.dno,cd.allClockAfter,cd.allClockMorning from clockdepall cd WHERE TO_DAYS(clockDay)=TO_DAYS(NOW());
+    </select>
+
+
+
 </mapper>
 

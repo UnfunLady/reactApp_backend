@@ -5,10 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.webapp.bean.ClockInfo;
 import com.example.webapp.bean.Depall;
-import com.example.webapp.bean.Dept;
 import com.example.webapp.bean.EmployeLeave;
 import com.example.webapp.mapper.clockMapper;
 import com.example.webapp.mapper.employeLeaveMapper;
+import com.example.webapp.service.depallService;
 import com.example.webapp.util.LoginEmployeToken;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,8 @@ import java.util.Map;
 public class attendanceController {
     @Autowired
     employeLeaveMapper employeLeaveMapper;
-
+    @Autowired
+    depallService depallService;
     @Autowired
     clockMapper clockMapper;
 
@@ -136,8 +137,9 @@ public class attendanceController {
                 map.put("employeLeaveListInfo", employeLeaveListInfo);
                 map.put("count", employeLeaveListInfo.size());
             } else {
-                map.put("code", 202);
-                map.put("msg", "获取请假信息失败");
+                map.put("code", 200);
+                map.put("employeLeaveListInfo", null);
+                map.put("count", 0);
             }
         }
         return map;
@@ -261,17 +263,21 @@ public class attendanceController {
     @GetMapping("/api/getClockInfo")
     public Map clockInfo() {
         Map map = new HashMap();
+        //        全部打卡情况
         List<Map<String, String>> todayAllInfo = clockMapper.getTodayAllInfo();
-//        上下班打卡情况
-        List<Map<String, String>> todayInfoGroupDepall = clockMapper.getTodayInfoGroupDepall();
-        if (todayAllInfo != null && todayAllInfo.size() > 0 && todayInfoGroupDepall != null && todayInfoGroupDepall.size() > 0) {
-            map.put("code", 200);
-            map.put("todayAllInfo", todayAllInfo);
-            map.put("todayInfoGroupDepall", todayInfoGroupDepall);
-        } else {
-            map.put("code", 202);
-            map.put("msg", "暂无今日打卡信息");
-        }
+        //        上下班打卡情况
+        List<Map<String, String>> todayMorningInfo = clockMapper.getTodayMorningInfo();
+        List<Map<String, String>> todayAfterInfo = clockMapper.getTodayAfterInfo();
+        int deptCount = depallService.count();
+        map.put("code", 200);
+        map.put("todayAllInfo", todayAllInfo);
+        map.put("AllClockCount", todayAllInfo.size());
+        map.put("DeptMorningCount", todayMorningInfo.size());
+        map.put("todayMorningInfo", todayMorningInfo);
+        map.put("todayAfterInfo", todayAfterInfo);
+        map.put("DeptAfterCount", todayAfterInfo.size());
+        map.put("AllDeptCount", deptCount);
+
         return map;
     }
 

@@ -17,13 +17,29 @@ public interface clockMapper extends BaseMapper<ClockInfo> {
     @Select("SELECT * FROM clockemploye WHERE TO_DAYS(clocktime) =TO_DAYS(NOW())")
     List<Map<String, String>> getTodayAllInfo();
 
+    //    获取今日上班打卡信息
     @MapKey("")
-//    获取今日部门打卡信息
-    List<Map<String, String>> getTodayInfoGroupDepall();
+    List<Map<String, String>> getTodayMorningInfo();
+
+    //    获取今日下班打卡信息
+    @MapKey("")
+    List<Map<String, String>> getTodayAfterInfo();
+
+     //    获取本月总打卡次数
+    @MapKey("")
+    List<Map<String, String>> getMonthClockCount();
+    //    本月上午迟到人数
+    @MapKey("")
+    List<Map<String, String>> getMonthClockDelayCount();
+//   今日打卡部门上下班是否全勤情况
+    @MapKey("")
+    List<Map<String, String>> getTodayAllClockInfo();
 
 
-    List<ClockInfo> isClockMorning(Integer employeno,String clockTime);
+    //    ----------------------------
+//    员工今日是否打上下班卡
+    List<ClockInfo> isClockMorning(Integer employeno, String clockTime);
 
-    List<ClockInfo> isClockAfter(Integer employeno,String clockTime);
+    List<ClockInfo> isClockAfter(Integer employeno, String clockTime);
 
 }
