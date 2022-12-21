@@ -18,16 +18,30 @@ SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockT
     <select id="getTodayAfterInfo" resultType="java.util.HashMap">
       SELECT c.dno ,d.dname,cd.allClockAfter,count(DISTINCT c.employeno) as clockMorningCount,d.count AS depalltCount FROM clockemploye c, depall d,clockdepall cd WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno AND cd.dno=c.dno AND c.type="下午" GROUP BY c.dno
     </select>
-    <select id="getMonthClockCount" resultType="java.util.HashMap">
+    <select id="getMonthClockCount" resultType="Integer">
 select count(employeno)from clockemploye where DATE_FORMAT(clockTime,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m');
     </select>
-    <select id="getMonthClockDelayCount" resultType="java.util.HashMap">
+    <select id="getMonthClockDelayCount" resultType="Integer">
 SELECT count(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')>'09:00:00' AND type="上午" AND DATE_FORMAT(clockTime,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m');
     </select>
     <select id="getTodayAllClockInfo" resultType="java.util.HashMap">
 SELECT cd.clockDay,cd.dno,cd.allClockAfter,cd.allClockMorning from clockdepall cd WHERE TO_DAYS(clockDay)=TO_DAYS(NOW());
     </select>
-
+    <select id="getClockDelayCount" resultType="Integer">
+    SELECT count(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')>'09:00:00' AND type="上午" AND TO_DAYS(clockTime)=TO_DAYS(NOW())
+    </select>
+    <select id="getWeekClockCount" resultType="Integer">
+    SELECT count(employeno) FROM clockemploye WHERE YEARWEEK(DATE_FORMAT(clockTime,'%Y-%m-%d')) = YEARWEEK(NOW());
+        </select>
+    <select id="getWeekClockDelayCount" resultType="Integer">
+SELECT COUNT(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')	>	'09:00:00' AND type="上午" AND YEARWEEK(DATE_FORMAT(clockTime,'%Y-%m-%d')) = YEARWEEK(NOW());
+  </select>
+    <select id="getTodayClockCount" resultType="Integer">
+SELECT COUNT(employeno) FROM clockemploye WHERE TO_DAYS(clockTime) = TO_DAYS(NOW());
+    </select>
+    <select id="getTodayClockDelayCount" resultType="Integer">
+SELECT COUNT(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')	>	'09:00:00' AND type="上午" AND TO_DAYS(clockTime) = TO_DAYS(NOW());
+ </select>
 
 
 </mapper>

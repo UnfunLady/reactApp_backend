@@ -13,7 +13,6 @@ import com.example.webapp.mapper.employeSalaryMapper;
 import com.example.webapp.service.depallService;
 import com.example.webapp.service.deptService;
 import com.example.webapp.service.employeService;
-import com.example.webapp.util.LoginEmployeToken;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -100,8 +99,6 @@ public class deptController {
 
         return map;
     }
-
-
 
     //    获取省市相关
     @LoginToken

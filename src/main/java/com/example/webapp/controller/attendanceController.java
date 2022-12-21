@@ -4,16 +4,18 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.webapp.bean.ClockInfo;
-import com.example.webapp.bean.Depall;
 import com.example.webapp.bean.EmployeLeave;
 import com.example.webapp.mapper.clockMapper;
 import com.example.webapp.mapper.employeLeaveMapper;
 import com.example.webapp.service.depallService;
+import com.example.webapp.service.deptService;
+import com.example.webapp.service.employeService;
 import com.example.webapp.util.LoginEmployeToken;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,10 @@ public class attendanceController {
     employeLeaveMapper employeLeaveMapper;
     @Autowired
     depallService depallService;
+    @Autowired
+    deptService deptService;
+    @Autowired
+    employeService employeService;
     @Autowired
     clockMapper clockMapper;
 
@@ -148,7 +154,7 @@ public class attendanceController {
     //判断员工是否打了卡
     @LoginEmployeToken
     @PostMapping("/api/clockMorning")
-    public Map clockInfo(@RequestBody Map map) {
+    public Map clockMorningInfo(@RequestBody Map map) {
         Map map1 = new HashMap();
         if (map.get("employeno") == null || map.get("clockTime") == null) {
             map1.put("code", 202);
@@ -180,28 +186,22 @@ public class attendanceController {
     //    添加打卡信息
     @LoginEmployeToken
     @PostMapping("/api/saveclock")
-    public Map saveClock(@RequestBody Map map) {
+    public Map saveClock(@RequestBody List<ClockInfo> clockInfoList) {
         Map map1 = new HashMap();
-        if (map.get("dno") == null || map.get("deptid") == null || map.get("employeno") == null || map.get("employename") == null
-                || map.get("type") == null || map.get("clockTime") == null) {
-            map1.put("code", 202);
-            map1.put("msg", "缺少请求参数");
-        } else {
-            ClockInfo clockInfo = new ClockInfo();
-            clockInfo.setDno(Integer.parseInt(map.get("dno").toString()));
-            clockInfo.setDeptid(Integer.parseInt(map.get("deptid").toString()));
-            clockInfo.setEmployeno(Integer.parseInt(map.get("employeno").toString()));
-            clockInfo.setEmployename(map.get("employename").toString());
-            clockInfo.setType(map.get("type").toString());
-            clockInfo.setClockTime(map.get("clockTime").toString());
-            int insert = clockMapper.insert(clockInfo);
+        int count = 0, successCount = 0;
+        for (ClockInfo i : clockInfoList) {
+            count++;
+            int insert = clockMapper.insert(i);
             if (insert > 0) {
-                map1.put("code", 200);
-                map1.put("msg", "打卡成功");
-            } else {
-                map1.put("code", 202);
-                map1.put("msg", "打卡失败");
+                successCount++;
             }
+        }
+        if (successCount == count) {
+            map1.put("code", 200);
+            map1.put("msg", "打卡成功!");
+        } else {
+            map1.put("code", 202);
+            map1.put("msg", "打卡失败!");
         }
         return map1;
     }
@@ -261,25 +261,106 @@ public class attendanceController {
     //   打卡情况
     @LoginToken
     @GetMapping("/api/getClockInfo")
-    public Map clockInfo() {
+    public Map clockInfo(@RequestParam Map map1) {
+
         Map map = new HashMap();
-        //        全部打卡情况
-        List<Map<String, String>> todayAllInfo = clockMapper.getTodayAllInfo();
-        //        上下班打卡情况
-        List<Map<String, String>> todayMorningInfo = clockMapper.getTodayMorningInfo();
-        List<Map<String, String>> todayAfterInfo = clockMapper.getTodayAfterInfo();
-        int deptCount = depallService.count();
-        map.put("code", 200);
-        map.put("todayAllInfo", todayAllInfo);
-        map.put("AllClockCount", todayAllInfo.size());
-        map.put("DeptMorningCount", todayMorningInfo.size());
-        map.put("todayMorningInfo", todayMorningInfo);
-        map.put("todayAfterInfo", todayAfterInfo);
-        map.put("DeptAfterCount", todayAfterInfo.size());
-        map.put("AllDeptCount", deptCount);
+        if (map1.get("page") == null || map1.get("size") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少重要参数");
+        } else {
+            int page = (Integer.parseInt(map1.get("page").toString()) - 1) * Integer.parseInt(map1.get("size").toString());
+            //        全部打卡情况
+            List<Map<String, String>> todayAllInfo = clockMapper.getTodayAllInfo(page, Integer.parseInt(map1.get("size").toString()));
+            //        上下班打卡情况
+            List<Map<String, String>> todayMorningInfo = clockMapper.getTodayMorningInfo();
+            List<Map<String, String>> todayAfterInfo = clockMapper.getTodayAfterInfo();
+            int delayCount = clockMapper.getClockDelayCount();
+            int deptCount = depallService.count();
+            int allClockCount=clockMapper.getTodayClockCount();
+            NumberFormat numberFormat = NumberFormat.getInstance();
+            numberFormat.setMaximumFractionDigits(2);
+            String Percentage = numberFormat.format((float) delayCount / (float) todayAllInfo.size() * 100) + "%";
+            map.put("code", 200);
+            map.put("todayAllInfo", todayAllInfo);
+            map.put("AllClockCount", allClockCount);
+            map.put("DeptMorningCount", todayMorningInfo.size());
+            map.put("todayMorningInfo", todayMorningInfo);
+            map.put("todayAfterInfo", todayAfterInfo);
+            map.put("DeptAfterCount", todayAfterInfo.size());
+            map.put("AllDeptCount", deptCount);
+            map.put("delayCount", delayCount);
+            map.put("delayPercentage", Percentage);
+        }
 
         return map;
     }
 
+    //获取基本信息
+    @LoginToken
+    @GetMapping("/api/getBaseInfo")
+    public Map baseInfo() {
+        Map map = new HashMap();
+        //        部门数量
+        int depallCount = depallService.count();
+//        小组数量
+        int deptCount = deptService.count();
+//        员工总数
+        int employeCount = employeService.getCount();
+//        本月打卡人数
+        int monthClockCount = clockMapper.getMonthClockCount();
+//        本月迟到人数
+        int monthClockDelayCount = clockMapper.getMonthClockDelayCount();
+        NumberFormat numberFormat = NumberFormat.getInstance();
+        numberFormat.setMaximumFractionDigits(2);
+        String Percentage = numberFormat.format((float) monthClockDelayCount / (float) monthClockCount * 100) + "%";
+        map.put("code", 200);
+        map.put("depallCount", depallCount);
+        map.put("deptCount", deptCount);
+        map.put("employeCount", employeCount);
+        map.put("monthClockCount", monthClockCount);
+        map.put("monthClockDelayCount", monthClockDelayCount);
+        map.put("monthClockPercentage", Percentage);
+        return map;
+    }
+
+    //    条形图数据
+    @LoginToken
+    @GetMapping("/api/getBaseChartsInfo")
+    public Map baseChartsInfo() {
+        Map map = new HashMap();
+//        本月打卡人数
+        int monthClockCount = clockMapper.getMonthClockCount();
+//        本月迟到人数
+        int monthClockDelayCount = clockMapper.getMonthClockDelayCount();
+//    本周打卡人数
+        Integer weekClockCount = clockMapper.getWeekClockCount();
+        //    本周打卡迟到人数
+        Integer weekClockDelayCount = clockMapper.getWeekClockDelayCount();
+        //    本日打卡人数
+        Integer todayClockCount = clockMapper.getTodayClockCount();
+        //    本日打卡迟到人数
+        Integer todayClockDelayCount = clockMapper.getTodayClockDelayCount();
+        List dataList = new ArrayList();
+        dataList.add(todayClockCount);
+        dataList.add(todayClockDelayCount);
+        dataList.add(monthClockCount);
+        dataList.add(monthClockDelayCount);
+        dataList.add(weekClockCount);
+        dataList.add(weekClockDelayCount);
+
+        List titleList = new ArrayList();
+        titleList.add("日打卡数");
+        titleList.add("日迟到数");
+        titleList.add("月打卡数");
+        titleList.add("月迟到数");
+        titleList.add("周打卡数");
+        titleList.add("周迟到数");
+
+        map.put("code", 200);
+        map.put("dataList", dataList);
+        map.put("titleList", titleList);
+
+        return map;
+    }
 
 }
