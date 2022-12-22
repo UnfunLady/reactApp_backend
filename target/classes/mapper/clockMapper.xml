@@ -12,11 +12,12 @@ SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockT
 SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockTime, '%Y-%m-%d')=#{clockTime} AND type ="下午"
     </select>
     <select id="getTodayMorningInfo" resultType="java.util.HashMap">
-      SELECT c.dno ,d.dname,cd.allClockMorning,count(DISTINCT c.employeno) as clockMorningCount,d.count AS depalltCount FROM clockemploye c, depall d,clockdepall cd WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno AND cd.dno=c.dno AND c.type="上午" GROUP BY c.dno
-    </select>
+SELECT d.dno,d.`explain`,d.avatar,d.count,d.dname,d.groupCount,cd.clockDay,cd.allClockAfter,cd.allClockMorning,c.clockTime,count(DISTINCT c.employeno)as clockNum from clockemploye c,depall d,clockdepall cd WHERE to_days(c.clockTime) =to_days(NOW()) AND type="上午"
+AND c.dno=d.dno  AND c.dno=cd.dno AND to_days(cd.clockDay) =to_days(NOW()) GROUP BY c.dno    </select>
 
     <select id="getTodayAfterInfo" resultType="java.util.HashMap">
-      SELECT c.dno ,d.dname,cd.allClockAfter,count(DISTINCT c.employeno) as clockMorningCount,d.count AS depalltCount FROM clockemploye c, depall d,clockdepall cd WHERE TO_DAYS(c.clocktime) =TO_DAYS(NOW()) AND c.dno=d.dno AND cd.dno=c.dno AND c.type="下午" GROUP BY c.dno
+SELECT d.dno,d.`explain`,d.avatar,d.count,d.dname,d.groupCount,cd.clockDay,cd.allClockAfter,cd.allClockMorning,c.clockTime,count(DISTINCT c.employeno)as clockNum from clockemploye c,depall d,clockdepall cd WHERE to_days(c.clockTime) =to_days(NOW()) AND type="下午"
+AND c.dno=d.dno  AND c.dno=cd.dno AND to_days(cd.clockDay) =to_days(NOW()) GROUP BY c.dno
     </select>
     <select id="getMonthClockCount" resultType="Integer">
 select count(employeno)from clockemploye where DATE_FORMAT(clockTime,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m');
@@ -27,6 +28,7 @@ SELECT count(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')>'09:
     <select id="getTodayAllClockInfo" resultType="java.util.HashMap">
 SELECT cd.clockDay,cd.dno,cd.allClockAfter,cd.allClockMorning from clockdepall cd WHERE TO_DAYS(clockDay)=TO_DAYS(NOW());
     </select>
+
     <select id="getClockDelayCount" resultType="Integer">
     SELECT count(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')>'09:00:00' AND type="上午" AND TO_DAYS(clockTime)=TO_DAYS(NOW())
     </select>

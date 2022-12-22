@@ -273,10 +273,11 @@ public class attendanceController {
             List<Map<String, String>> todayAllInfo = clockMapper.getTodayAllInfo(page, Integer.parseInt(map1.get("size").toString()));
             //        上下班打卡情况
             List<Map<String, String>> todayMorningInfo = clockMapper.getTodayMorningInfo();
+//            上班人数
             List<Map<String, String>> todayAfterInfo = clockMapper.getTodayAfterInfo();
             int delayCount = clockMapper.getClockDelayCount();
             int deptCount = depallService.count();
-            int allClockCount=clockMapper.getTodayClockCount();
+            int allClockCount = clockMapper.getTodayClockCount();
             NumberFormat numberFormat = NumberFormat.getInstance();
             numberFormat.setMaximumFractionDigits(2);
             String Percentage = numberFormat.format((float) delayCount / (float) todayAllInfo.size() * 100) + "%";
