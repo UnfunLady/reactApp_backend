@@ -364,4 +364,20 @@ public class attendanceController {
         return map;
     }
 
+    //    获取今日打卡员工信息
+    @LoginToken
+    @GetMapping("/api/getTodayClockEmployeInfo")
+    public Map getTodayClockEmployeInfo(@RequestParam Map map1) {
+        Map map = new HashMap();
+        if (map1.get("dno") == null || map1.get("page") == null || map1.get("size") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少重要参数");
+        } else {
+            int page = (Integer.parseInt(map1.get("page").toString()) - 1) * Integer.parseInt(map1.get("size").toString());
+            List<Map<String, String>> todayClockEmployeInfo = clockMapper.getTodayClockEmployeInfoPage(Integer.parseInt(map1.get("dno").toString()), page, Integer.parseInt(map1.get("size").toString()));
+            map.put("code", 200);
+            map.put("todayClockEmployeInfo", todayClockEmployeInfo);
+        }
+        return map;
+    }
 }

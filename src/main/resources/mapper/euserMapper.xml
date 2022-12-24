@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.webapp.mapper.euserMapper">
+    <select id="getEusersInfoByKeyWord" resultType="java.util.HashMap">
+select *from eusers where islock=#{type} AND (username like concat('%',#{keyword},'%')OR nickname like concat('%',#{keyword},'%')) limit #{page},#{size}
+    </select>
+    <select id="getEusersInfoByKeyWordCount" resultType="Integer">
+select count(*)from eusers where islock=#{type} AND (username like concat('%',#{keyword},'%')OR nickname like concat('%',#{keyword},'%'))
+    </select>
+</mapper>
+

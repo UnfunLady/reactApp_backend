@@ -37,12 +37,13 @@ public interface employeMapper extends BaseMapper<Employe> {
 
     //    关键字获取时要获取的总员工数量
     Integer getKeyWordSearchCount(String keyword);
-
     //    分页获取未接种员工信息
     List<Employe> getEmployeNoCovid(Integer dno, Integer page, Integer size);
-
 
     //    获取员工个人信息 根据账号登录
     @MapKey("")
     List<Map<String, String>> getEmployeInfo(Integer employeno);
+
+
+
 }

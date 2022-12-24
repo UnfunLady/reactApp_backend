@@ -23,20 +23,27 @@ public interface clockMapper extends BaseMapper<ClockInfo> {
 
     //    获取今日迟到人数
     Integer getClockDelayCount();
+
     //    获取今日下班打卡信息
     @MapKey("")
     List<Map<String, String>> getTodayAfterInfo();
+
     //    获取本月总打卡次数
     @MapKey("")
     Integer getMonthClockCount();
+
     //    本月上午迟到人数
     Integer getMonthClockDelayCount();
+
     //    获取本周打卡次数
     Integer getWeekClockCount();
+
     //    获取本周迟到次数
     Integer getWeekClockDelayCount();
+
     //    获取本日打卡次数
     Integer getTodayClockCount();
+
     //    获取本日迟到次数
     Integer getTodayClockDelayCount();
 
@@ -44,6 +51,9 @@ public interface clockMapper extends BaseMapper<ClockInfo> {
     @MapKey("")
     List<Map<String, String>> getTodayAllClockInfo();
 
+    //根据部门号获取今日打卡的具体员工是谁
+    @MapKey("")
+    List<Map<String, String>> getTodayClockEmployeInfoPage(Integer dno, Integer page, Integer size);
 
     //    ----------------------------
 //    员工今日是否打上下班卡

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.webapp.bean.*;
 import com.example.webapp.mapper.employeReDoMapper;
 import com.example.webapp.mapper.employeSalaryDetailMapper;
+import com.example.webapp.mapper.euserMapper;
 import com.example.webapp.service.deptService;
 import com.example.webapp.service.employeService;
 import com.example.webapp.util.LoginEmployeToken;
@@ -26,7 +27,8 @@ public class employeController {
     employeReDoMapper employeReDoMapper;
     @Autowired
     employeSalaryDetailMapper employeSalaryDetailMapper;
-
+    @Autowired
+    euserMapper euserMapper;
 
     // 根据部门团队号查询 部门团队下的所有成员
     @LoginToken
@@ -153,8 +155,22 @@ public class employeController {
                     employe.setEmploysalary(map.get("employsalary").toString());
                     int insert = employeService.getBaseMapper().insert(employe);
                     if (insert > 0) {
-                        map1.put("code", 200);
-                        map1.put("msg", "添加员工成功！");
+                        //插入新账号到账号表
+                        Employe employe1 = employeService.getBaseMapper().selectOne(new QueryWrapper<Employe>().eq("employname", employe.getEmployname()).eq("deptno", employe.getDeptno()).eq("employidcard", employe.getEmployidcard()).eq("entryDate", employe.getEntryDate()));
+                        if (employe1 != null) {
+                            Eusers eusers = new Eusers();
+                            eusers.setUsername(employe1.getEmployno().toString());
+                            int insert1 = euserMapper.insert(eusers);
+                            if (insert1 > 0) {
+                                map1.put("code", 200);
+                                map1.put("msg", "添加员工成功！");
+                            }
+                        } else {
+
+                            map1.put("code", 202);
+                            map1.put("msg", "添加员工账号失败请联系管理员！");
+                        }
+
                     } else {
                         map1.put("code", 202);
                         map1.put("msg", "添加员工失败！");
@@ -421,7 +437,7 @@ public class employeController {
     }
 
 
-    //    获取员工信息
+    //    获取打卡的员工信息
     @LoginEmployeToken
     @PostMapping("/api/getEmployeInfo")
     public Map getEmployeInfo(@RequestBody Map map1) {
@@ -440,6 +456,108 @@ public class employeController {
             }
         }
 
+        return map;
+    }
+
+
+    //    获取全部员工账号分页
+    @LoginToken
+    @PostMapping("/api/getEuses")
+    public Map getEusesPage(@RequestBody Map map1) {
+        Map map = new HashMap();
+        if (map1.get("page") == null || map1.get("size") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少参数！");
+        } else {
+            Page<Eusers> ePage = new Page<>(Integer.parseInt(map1.get("page").toString()), Integer.parseInt(map1.get("size").toString()));
+            Page<Eusers> eusersPage = euserMapper.selectPage(ePage, new QueryWrapper<Eusers>(null));
+            if (eusersPage != null && eusersPage.getTotal() > 0) {
+                List<Eusers> eusersList = eusersPage.getRecords();
+                Integer count = euserMapper.selectCount(new QueryWrapper<Eusers>(null));
+                map.put("code", 200);
+                map.put("eusersList", eusersList);
+                map.put("count", count);
+            } else {
+                map.put("code", 202);
+                map.put("msg", "暂无员工账号");
+            }
+        }
+        return map;
+    }
+
+    //关键字查找
+    @LoginToken
+    @PostMapping("/api/keyWordSearch")
+    public Map keyWordSearch(@RequestBody Map map1) {
+        Map map = new HashMap();
+        int page = (Integer.parseInt(map1.get("page").toString()) - 1) * Integer.parseInt(map1.get("size").toString());
+        List<Map<String, String>> keyWordList = euserMapper.getEusersInfoByKeyWord(map1.get("keyword").toString(), map1.get("type").toString(), page, Integer.parseInt(map1.get("size").toString()));
+        Integer count = euserMapper.getEusersInfoByKeyWordCount(map1.get("keyword").toString(), map1.get("type").toString(), page, Integer.parseInt(map1.get("size").toString()));
+        map.put("code", 200);
+        map.put("eusersList", keyWordList);
+        map.put("count", count);
+
+        return map;
+    }
+
+    //重置账号
+    @LoginToken
+    @PostMapping("/api/resetEuser")
+    public Map resetEuser(@RequestBody Map map1) {
+        Map map = new HashMap();
+        if (map1.get("username") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少参数！");
+        } else {
+            Eusers eusers = new Eusers();
+            eusers.setIslock("0");
+            eusers.setPassword("88888888");
+            int update = euserMapper.update(eusers, new UpdateWrapper<Eusers>().eq("username", map1.get("username")));
+            if (update > 0) {
+                map.put("code", 200);
+                map.put("msg", "重置成功");
+            } else {
+                map.put("code", 202);
+                map.put("msg", "重置失败");
+            }
+
+        }
+
+        return map;
+    }
+
+    //解封与封禁账号
+    @LoginToken
+    @PostMapping("/api/blockOrFreeEuser")
+    public Map blockOrFreeEuser(@RequestBody Map map1) {
+        Map map = new HashMap();
+        Eusers eusers = new Eusers();
+        if (map1.get("username") == null || map1.get("config") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少参数！");
+        } else {
+            if ("block".equals(map1.get("config"))) {
+                eusers.setIslock("1");
+                int update = euserMapper.update(eusers, new UpdateWrapper<Eusers>().eq("username", map1.get("username")));
+                if (update > 0) {
+                    map.put("code", 200);
+                    map.put("msg", "操作成功！");
+                } else {
+                    map.put("code", 202);
+                    map.put("msg", "操作失败！");
+                }
+            } else {
+                eusers.setIslock("0");
+                int update = euserMapper.update(eusers, new UpdateWrapper<Eusers>().eq("username", map1.get("username")));
+                if (update > 0) {
+                    map.put("code", 200);
+                    map.put("msg", "操作成功！");
+                } else {
+                    map.put("code", 202);
+                    map.put("msg", "操作失败！");
+                }
+            }
+        }
         return map;
     }
 }

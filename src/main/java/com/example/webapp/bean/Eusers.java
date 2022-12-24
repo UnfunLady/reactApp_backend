@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class Eusers {
     private String username;
     private String password;
-    private String isLock;
+    private String islock;
     private String level;
     private String avatar;
     private String nickname;

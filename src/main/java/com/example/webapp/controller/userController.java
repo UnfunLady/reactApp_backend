@@ -160,11 +160,17 @@ public class userController {
                 map.put("token", token);
             } else {
                 if (eusers != null) {
-                    String token = SignToken.getTokenEmploye(eusers);
-                    map.put("code", 200);
-                    map.put("msg", "账号密码验证成功！");
-                    map.put("Info", eusers);
-                    map.put("token", token);
+                    if ("0".equals(eusers.getIslock())) {
+                        String token = SignToken.getTokenEmploye(eusers);
+                        map.put("code", 200);
+                        map.put("msg", "账号密码验证成功！");
+                        map.put("Info", eusers);
+                        map.put("token", token);
+                    } else {
+                        map.put("code", 201);
+                        map.put("msg", "账号被封禁 请联系管理员！");
+                    }
+
                 } else {
                     map.put("code", 201);
                     map.put("msg", "账号密码错误！");
