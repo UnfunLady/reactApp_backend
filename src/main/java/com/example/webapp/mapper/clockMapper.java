@@ -47,13 +47,22 @@ public interface clockMapper extends BaseMapper<ClockInfo> {
     //    获取本日迟到次数
     Integer getTodayClockDelayCount();
 
+    //    获取本日上午打卡次数
+    @Select("SELECT COUNT(employeno) FROM clockemploye WHERE  type=\"上午\" AND TO_DAYS(clockTime) = TO_DAYS(NOW());\n")
+    Integer getTodayClockMorningCount();
+
     //   今日打卡部门上下班是否全勤情况
     @MapKey("")
     List<Map<String, String>> getTodayAllClockInfo();
 
     //根据部门号获取今日打卡的具体员工是谁
     @MapKey("")
-    List<Map<String, String>> getTodayClockEmployeInfoPage(Integer dno, Integer page, Integer size);
+    List<Map<String, String>> getTodayClockEmployeInfoPage(Integer dno, String type, Integer page, Integer size);
+
+    //    获取今日迟到的人的信息
+    @MapKey("")
+    List<Map<String, String>> getTodayDelayClockInfo(Integer page, Integer size);
+
 
     //    ----------------------------
 //    员工今日是否打上下班卡

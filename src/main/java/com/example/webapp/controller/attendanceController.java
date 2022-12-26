@@ -276,11 +276,12 @@ public class attendanceController {
 //            上班人数
             List<Map<String, String>> todayAfterInfo = clockMapper.getTodayAfterInfo();
             int delayCount = clockMapper.getClockDelayCount();
+            int todayMorningCount = clockMapper.getTodayClockMorningCount();
             int deptCount = depallService.count();
             int allClockCount = clockMapper.getTodayClockCount();
             NumberFormat numberFormat = NumberFormat.getInstance();
             numberFormat.setMaximumFractionDigits(2);
-            String Percentage = numberFormat.format((float) delayCount / (float) todayAllInfo.size() * 100) + "%";
+            String Percentage = numberFormat.format((float) delayCount / (float) todayMorningCount * 100) + "%";
             map.put("code", 200);
             map.put("todayAllInfo", todayAllInfo);
             map.put("AllClockCount", allClockCount);
@@ -369,14 +370,41 @@ public class attendanceController {
     @GetMapping("/api/getTodayClockEmployeInfo")
     public Map getTodayClockEmployeInfo(@RequestParam Map map1) {
         Map map = new HashMap();
-        if (map1.get("dno") == null || map1.get("page") == null || map1.get("size") == null) {
+        if (map1.get("dno") == null || map1.get("page") == null || map1.get("size") == null || map1.get("type") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少重要参数");
+        } else {
+            if ("morning".equals(map1.get("type"))) {
+                int page = (Integer.parseInt(map1.get("page").toString()) - 1) * Integer.parseInt(map1.get("size").toString());
+                List<Map<String, String>> todayClockEmployeInfo = clockMapper.getTodayClockEmployeInfoPage(Integer.parseInt(map1.get("dno").toString()), "上午", page, Integer.parseInt(map1.get("size").toString()));
+                map.put("code", 200);
+                map.put("todayClockEmployeInfo", todayClockEmployeInfo);
+            } else {
+                int page = (Integer.parseInt(map1.get("page").toString()) - 1) * Integer.parseInt(map1.get("size").toString());
+                List<Map<String, String>> todayClockEmployeInfo = clockMapper.getTodayClockEmployeInfoPage(Integer.parseInt(map1.get("dno").toString()), "下午", page, Integer.parseInt(map1.get("size").toString()));
+                map.put("code", 200);
+                map.put("todayClockEmployeInfo", todayClockEmployeInfo);
+            }
+        }
+        return map;
+    }
+
+
+    //今日迟到打卡信息
+    @LoginToken
+    @GetMapping("/api/getTodayClockDelayInfo")
+    public Map getTodayClockDelayInfo(@RequestParam Map map1) {
+        Map map = new HashMap();
+        if (map1.get("page") == null || map1.get("size") == null) {
             map.put("code", 202);
             map.put("msg", "缺少重要参数");
         } else {
             int page = (Integer.parseInt(map1.get("page").toString()) - 1) * Integer.parseInt(map1.get("size").toString());
-            List<Map<String, String>> todayClockEmployeInfo = clockMapper.getTodayClockEmployeInfoPage(Integer.parseInt(map1.get("dno").toString()), page, Integer.parseInt(map1.get("size").toString()));
+            List<Map<String, String>> todayDelayClockInfo = clockMapper.getTodayDelayClockInfo(page, Integer.parseInt(map1.get("size").toString()));
+            int delaycount = clockMapper.getClockDelayCount();
             map.put("code", 200);
-            map.put("todayClockEmployeInfo", todayClockEmployeInfo);
+            map.put("todayDelayClockInfo", todayDelayClockInfo);
+            map.put("delaycount", delaycount);
         }
         return map;
     }

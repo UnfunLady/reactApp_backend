@@ -45,10 +45,13 @@ SELECT COUNT(employeno) FROM clockemploye WHERE TO_DAYS(clockTime) = TO_DAYS(NOW
 SELECT COUNT(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')	>	'09:00:00' AND type="上午" AND TO_DAYS(clockTime) = TO_DAYS(NOW());
  </select>
     <select id="getTodayClockEmployeInfoPage" resultType="java.util.HashMap">
-select e.employname,e.employno,D.dname,dp.deptname,c.clockTime,c.type from clockemploye c,employee e,depall d,dept dp WHERE TO_DAYS(clockTime)=TO_DAYS(NOW())AND c.dno=#{dno} AND e.employno=c.employeno AND c.dno=d.dno AND d.dno=dp.deptno AND c.deptid=dp.id AND dp.id=e.deptno limit #{page},#{size}
+select e.employname,e.employno,D.dname,dp.deptname,c.clockTime,c.type from clockemploye c,employee e,depall d,dept dp WHERE TO_DAYS(clockTime)=TO_DAYS(NOW())AND c.dno=#{dno}
+ AND e.employno=c.employeno AND c.dno=d.dno AND d.dno=dp.deptno AND c.deptid=dp.id AND dp.id=e.deptno AND type=#{type} limit #{page},#{size}
 
 </select>
-
+    <select id="getTodayDelayClockInfo" resultType="java.util.HashMap">
+SELECT *FROM clockemploye WHERE TO_DAYS(clockTime)=TO_DAYS(NOW()) AND type ="上午" AND DATE_FORMAT(clockTime, '%H')>8 limit #{page},#{size}
+</select>
 
 </mapper>
 

@@ -459,6 +459,42 @@ public class employeController {
         return map;
     }
 
+    //    修改密码
+    @LoginEmployeToken
+    @PostMapping("/api/updateEuserPassword")
+    public Map updateEuserPassword(@RequestBody Map map1) {
+        Map map = new HashMap();
+        if (map1.get("nowPassword") == null || map1.get("newPassword") == null || map1.get("user") == null) {
+            map.put("code", 202);
+            map.put("msg", "修改密码失败：缺少重要参数");
+        } else {
+            String nowPassword = map1.get("nowPassword").toString();
+            String newPassword = map1.get("newPassword").toString();
+            String username = map1.get("user").toString();
+            if (newPassword.equals(nowPassword)) {
+                map.put("code", 202);
+                map.put("msg", "新旧密码不能相同！");
+            } else {
+//                判断原密码是否正确
+                Eusers euser = euserMapper.selectOne(new QueryWrapper<Eusers>().eq("username", username));
+                if (euser.getPassword().equals(nowPassword)) {
+//                  原密码正确
+                    euser.setPassword(newPassword);
+                    int update = euserMapper.update(euser, new UpdateWrapper<Eusers>().eq("username", username));
+                    if (update > 0) {
+                        map.put("code", 200);
+                        map.put("msg", "修改密码成功！");
+                    }
+                } else {
+                    map.put("code", 202);
+                    map.put("msg", "旧密码错误！");
+                }
+            }
+        }
+
+        return map;
+    }
+
 
     //    获取全部员工账号分页
     @LoginToken
@@ -526,17 +562,18 @@ public class employeController {
         return map;
     }
 
-    //解封与封禁账号
+    //修改账号
     @LoginToken
-    @PostMapping("/api/blockOrFreeEuser")
+    @PostMapping("/api/updateEuser")
     public Map blockOrFreeEuser(@RequestBody Map map1) {
         Map map = new HashMap();
         Eusers eusers = new Eusers();
-        if (map1.get("username") == null || map1.get("config") == null) {
+        if (map1.get("username") == null || map1.get("type") == null || map1.get("password") == null) {
             map.put("code", 202);
             map.put("msg", "缺少参数！");
         } else {
-            if ("block".equals(map1.get("config"))) {
+            eusers.setPassword(map1.get("password").toString());
+            if ("block".equals(map1.get("type"))) {
                 eusers.setIslock("1");
                 int update = euserMapper.update(eusers, new UpdateWrapper<Eusers>().eq("username", map1.get("username")));
                 if (update > 0) {
@@ -557,8 +594,10 @@ public class employeController {
                     map.put("msg", "操作失败！");
                 }
             }
+
         }
         return map;
     }
+
 }
 
