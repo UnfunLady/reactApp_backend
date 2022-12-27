@@ -59,10 +59,25 @@ public interface clockMapper extends BaseMapper<ClockInfo> {
     @MapKey("")
     List<Map<String, String>> getTodayClockEmployeInfoPage(Integer dno, String type, Integer page, Integer size);
 
+    //        今日正常出勤人信息
+    @MapKey("")
+    List<Map<String, String>> getTodayNormalClockInfo(Integer page, Integer size);
+
+    //正常出勤人总数
+    @Select("        SELECT count(*) FROM `clockemploye` WHERE '09:00:00'>DATE_FORMAT(clockTime,\"%T\") AND type=\"上午\" AND TO_DAYS(clockTime) =TO_DAYS(NOW())\n")
+    Integer getTodayNormalCount();
+
     //    获取今日迟到的人的信息
     @MapKey("")
     List<Map<String, String>> getTodayDelayClockInfo(Integer page, Integer size);
 
+    //    获取今日请假的人的信息
+    @MapKey("")
+    List<Map<String, String>> getTodayLeaveInfo(Integer page, Integer size);
+
+    //    获取今日请假的人的数量
+    @Select("SELECT count(*)FROM `leaverequest` where TO_DAYS(leaveWhen) =TO_DAYS(NOW())")
+    Integer getTodayLeaveCount();
 
     //    ----------------------------
 //    员工今日是否打上下班卡

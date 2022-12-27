@@ -389,6 +389,24 @@ public class attendanceController {
         return map;
     }
 
+    //今日正常打卡信息
+    @LoginToken
+    @GetMapping("/api/getTodayClockNormalInfo")
+    public Map getTodayClockNormalInfo(@RequestParam Map map1) {
+        Map map = new HashMap();
+        if (map1.get("page") == null || map1.get("size") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少重要参数");
+        } else {
+            int page = (Integer.parseInt(map1.get("page").toString()) - 1) * Integer.parseInt(map1.get("size").toString());
+            List<Map<String, String>> todayNormalClockInfo = clockMapper.getTodayNormalClockInfo(page, Integer.parseInt(map1.get("size").toString()));
+            int normalCount = clockMapper.getTodayNormalCount();
+            map.put("code", 200);
+            map.put("todayNormalClockInfo", todayNormalClockInfo);
+            map.put("normalCount", normalCount);
+        }
+        return map;
+    }
 
     //今日迟到打卡信息
     @LoginToken
@@ -408,4 +426,25 @@ public class attendanceController {
         }
         return map;
     }
+
+    //    今日请假信息
+    @LoginToken
+    @GetMapping("/api/getTodayLeaveInfo")
+    public Map getTodayLeaveInfo(@RequestParam Map map1) {
+        Map map = new HashMap();
+        if (map1.get("page") == null || map1.get("size") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少重要参数");
+        } else {
+            int page = (Integer.parseInt(map1.get("page").toString()) - 1) * Integer.parseInt(map1.get("size").toString());
+            List<Map<String, String>> todayLeaveInfo = clockMapper.getTodayLeaveInfo(page, Integer.parseInt(map1.get("size").toString()));
+            int leaveCount = clockMapper.getTodayLeaveCount();
+            map.put("code", 200);
+            map.put("todayLeaveInfo", todayLeaveInfo);
+            map.put("leaveCount", leaveCount);
+        }
+        return map;
+    }
+
+
 }
