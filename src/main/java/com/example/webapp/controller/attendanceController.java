@@ -3,9 +3,9 @@ package com.example.webapp.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.webapp.bean.ClockInfo;
-import com.example.webapp.bean.EmployeLeave;
+import com.example.webapp.bean.*;
 import com.example.webapp.mapper.clockMapper;
+import com.example.webapp.mapper.depallTreeMapper;
 import com.example.webapp.mapper.employeLeaveMapper;
 import com.example.webapp.service.depallService;
 import com.example.webapp.service.deptService;
@@ -33,6 +33,8 @@ public class attendanceController {
     employeService employeService;
     @Autowired
     clockMapper clockMapper;
+    @Autowired
+    depallTreeMapper depallTreeMapper;
 
     //员工获取属于自己的部门
 //    获取部门信息
@@ -446,5 +448,26 @@ public class attendanceController {
         return map;
     }
 
+    //获取打卡信息左侧树结构的数据
+    @LoginToken
+    @GetMapping("/api/getTreeInfo")
+    public Map getTreeInfo(@RequestParam Map map1) {
+        Map map = new HashMap();
+        List<Map<String, String>> depallTreeList = depallTreeMapper.getAllDepall();
+        if (depallTreeList != null && depallTreeList.size() > 0) {
+            // 循环遍历
+            for (Map m : depallTreeList) {
+                List<Map<String, String>> deptList = depallTreeMapper.getChildrenDeptInfo(Integer.parseInt(m.get("key").toString()));
+                m.put("children", deptList);
+            }
+            map.put("code", 200);
+            map.put("depallTreeList", depallTreeList);
+
+        } else {
+            map.put("code", 202);
+            map.put("msg", "暂无部门信息");
+        }
+        return map;
+    }
 
 }

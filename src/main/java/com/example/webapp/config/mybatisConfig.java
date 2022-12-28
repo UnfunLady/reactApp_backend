@@ -17,8 +17,9 @@ public class mybatisConfig {
 //        超过最后一页跳回首页
         paginationInnerInterceptor.setOverflow(true);
         interceptor.addInnerInterceptor(paginationInnerInterceptor);
-        return  interceptor;
+        return interceptor;
     }
+
     @Bean
     public ConfigurationCustomizer configurationCustomizer() {
         return configuration -> configuration.setUseDeprecatedExecutor(false);
