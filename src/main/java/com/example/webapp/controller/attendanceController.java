@@ -470,4 +470,59 @@ public class attendanceController {
         return map;
     }
 
+    //    获取指定打卡数据
+    @LoginToken
+    @PostMapping("/api/getClockInfoTree")
+    public Map getClockInfoByTree(@RequestBody Map map1) {
+        Map map = new HashMap();
+        if (map1.get("dno") == null || map1.get("isDepall") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少重要参数");
+        } else {
+            if (Boolean.parseBoolean(map1.get("isDepall").toString())) {
+//                获取部门全部数据
+                List<ClockInfo> depallClockInfo = clockMapper.selectList(new QueryWrapper<ClockInfo>().eq("dno", map1.get("dno")));
+                map.put("code", 200);
+                map.put("ClockInfo", depallClockInfo);
+                map.put("count", depallClockInfo.size());
+            } else {
+                List<ClockInfo> deptClockInfo = clockMapper.selectList(new QueryWrapper<ClockInfo>().eq("dno", map1.get("dno")).eq("deptid", map1.get("deptId")));
+                map.put("code", 200);
+                map.put("ClockInfo", deptClockInfo);
+                map.put("count", deptClockInfo.size());
+            }
+        }
+        return map;
+    }
+
+    //    修改打卡数据
+    @LoginToken
+    @PostMapping("/api/editClockInfo")
+    public Map editClockInfo(@RequestBody Map map1) {
+        Map map = new HashMap();
+        if (map1.get("dno") == null || map1.get("deptId") == null || map1.get("employeno") == null ||
+                map1.get("clockTime") == null || map1.get("originClockTime") == null || map1.get("type") == null
+                || map1.get("employename") == null || map1.get("employeno") == null) {
+            map.put("code", 202);
+            map.put("msg", "缺少重要参数");
+        } else {
+            ClockInfo clockInfo = new ClockInfo();
+            clockInfo.setEmployename(map1.get("employename").toString());
+            clockInfo.setEmployeno(Integer.parseInt(map1.get("employeno").toString()));
+            clockInfo.setClockTime(map1.get("clockTime").toString());
+            clockInfo.setDno(Integer.parseInt(map1.get("dno").toString()));
+            clockInfo.setDeptid(Integer.parseInt(map1.get("deptId").toString()));
+            clockInfo.setType(map1.get("type").toString());
+            int update = clockMapper.update(clockInfo, new UpdateWrapper<ClockInfo>().eq("clockTime", map1.get("originClockTime"))
+                    .eq("type", clockInfo.getType()).eq("dno", clockInfo.getDno()).eq("employeno", clockInfo.getEmployeno()).eq("deptid", clockInfo.getDeptid()));
+            if (update > 0) {
+                map.put("code", 200);
+                map.put("msg", "修改打卡信息成功");
+            } else {
+                map.put("code", 202);
+                map.put("msg", "修改打卡信息失败");
+            }
+        }
+        return map;
+    }
 }

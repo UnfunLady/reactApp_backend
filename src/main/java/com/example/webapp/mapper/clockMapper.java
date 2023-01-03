@@ -85,4 +85,7 @@ public interface clockMapper extends BaseMapper<ClockInfo> {
 
     List<ClockInfo> isClockAfter(Integer employeno, String clockTime);
 
+//    获取部门全部打卡信息
+
+
 }

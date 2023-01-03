@@ -25,7 +25,12 @@ public class SignToken {
                 .sign(Algorithm.HMAC256(SING));
         return token;
     }
+//    验证token
+    public static DecodedJWT verify(String token) {
+        return JWT.require(Algorithm.HMAC256(SING)).build().verify(token);
+    }
 
+    //员工token
     public static String getTokenEmploye(Eusers euser) {
         String[] claims = {euser.getUsername(), euser.getPassword()};
         String token = "";
@@ -38,9 +43,6 @@ public class SignToken {
         return token;
     }
 
-    public static DecodedJWT verify(String token) {
-        return JWT.require(Algorithm.HMAC256(SING)).build().verify(token);
-    }
     public static DecodedJWT verifyE(String token) {
         return JWT.require(Algorithm.HMAC256(SING1)).build().verify(token);
     }
