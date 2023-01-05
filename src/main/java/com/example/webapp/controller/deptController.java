@@ -902,5 +902,16 @@ public class deptController {
         return map1;
     }
 
+    //    获取全部小组信息
+    @GetMapping("/api/getAllDeptInfo")
+    @LoginToken
+    public Map getAllDeptInfo() {
+        Map map1 = new HashMap();
+        List<Dept> deptList = deptService.list(new QueryWrapper<Dept>(null));
+        map1.put("code", 200);
+        map1.put("allDeptInfo", deptList);
+        return map1;
+    }
+
 }
 

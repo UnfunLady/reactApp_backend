@@ -17,6 +17,7 @@ import java.util.Map;
 public class AuthenticationInterceptor implements HandlerInterceptor {
     @Autowired
     usersService userService;
+
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object object) throws Exception {
         Map<String, Object> map = new HashMap<>();
         String token = httpServletRequest.getHeader("token");// 从 http 请求头中取出 token
@@ -58,7 +59,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 httpServletResponse.getWriter().println(json);
                 return false;
             }
-        }else{
+        } else {
             if (method.isAnnotationPresent(LoginEmployeToken.class)) {
                 LoginEmployeToken employeLoginToken = method.getAnnotation(LoginEmployeToken.class);
                 if (employeLoginToken.required()) {

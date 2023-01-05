@@ -1,5 +1,8 @@
 package com.example.webapp.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -7,6 +10,7 @@ import com.example.webapp.bean.*;
 import com.example.webapp.mapper.clockMapper;
 import com.example.webapp.mapper.depallTreeMapper;
 import com.example.webapp.mapper.employeLeaveMapper;
+import com.example.webapp.mapper.noticeMapper;
 import com.example.webapp.service.depallService;
 import com.example.webapp.service.deptService;
 import com.example.webapp.service.employeService;
@@ -14,12 +18,13 @@ import com.example.webapp.util.LoginEmployeToken;
 import com.example.webapp.util.LoginToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 public class attendanceController {
@@ -35,6 +40,8 @@ public class attendanceController {
     clockMapper clockMapper;
     @Autowired
     depallTreeMapper depallTreeMapper;
+    @Autowired
+    noticeMapper noticeMapper;
 
     //员工获取属于自己的部门
 //    获取部门信息
@@ -525,4 +532,174 @@ public class attendanceController {
         }
         return map;
     }
+
+    //    获取全部公告信息
+    @LoginToken
+    @PostMapping("/api/deleteNoticeImage")
+    public Map deleteNoticeImage(@RequestBody Map<String, List<String>> list, HttpServletRequest request) throws IOException {
+        Map map1 = new HashMap();
+//        设置存放文件路径
+        String publicPath = System.getProperty("user.dir") + "/src/main/resources/images/Notice/";
+        int count = 0, deleteCount = 0;
+        for (String i : list.get("deleteList")) {
+            count++;
+            String originFileName = i.split(request.getScheme() + "://" + request.getServerName() + ':' + request.getServerPort() + "/images/Notice/")[1];
+            File file = new File(publicPath + originFileName);
+            if (file.exists()) {
+                boolean delete = file.delete();
+                if (delete) {
+                    deleteCount++;
+                }
+            }
+        }
+        System.out.println(count);
+        System.out.println(deleteCount);
+        if (count == deleteCount) {
+            map1.put("code", 200);
+            map1.put("msg", "删除多余图片成功!");
+        } else {
+            map1.put("code", 202);
+            map1.put("msg", "删除多余图片失败!有可能是因为所删图片不存在！");
+
+        }
+        return map1;
+    }
+
+
+    //    公告上传图片api
+//    @LoginToken
+    @PostMapping("/api/uploadImgNotice")
+    public Map editDeptR(@RequestParam Map map, @RequestParam("file") MultipartFile file, HttpServletRequest request) throws IOException {
+        Map map1 = new HashMap();
+        if (!file.isEmpty()) {
+//               获取到头像 然后将头像名字随机赋值 存到resources文件夹
+            String avatarName = "uploadNoticeZengYu" + (int) (Math.random() * 114514) + file.getOriginalFilename();
+//                设置存放文件路径
+            String publicPath = System.getProperty("user.dir") + "/src/main/resources/images/Notice/";
+//               判断文件是否同名存在
+            File isFile = new File("classpath:/images/Notice/", avatarName);
+            if (isFile.exists()) {
+//                如果存在相同文件 则修改文件名再存
+                avatarName = "uploadNoticeZengYu" + (int) (Math.random() * 114515) + "SAFE" + file.getOriginalFilename();
+                file.transferTo(new File(publicPath + avatarName));
+                map1.put("code", 200);
+                map1.put("msg", "success");
+                map1.put("url", request.getScheme() + "://" + request.getServerName() + ':' + request.getServerPort() + "/images/Notice/" + avatarName);
+            } else {
+//                执行插入图片操作
+                file.transferTo(new File(publicPath + avatarName));
+                map1.put("code", 200);
+                map1.put("msg", "success");
+                map1.put("url", request.getScheme() + "://" + request.getServerName() + ':' + request.getServerPort() + "/images/Notice/" + avatarName);
+            }
+        } else {
+            map1.put("code", 202);
+            map1.put("msg", "缺少图片参数");
+        }
+
+        return map1;
+    }
+
+    //删除多余图片
+    @LoginToken
+    @GetMapping("/api/getAllNoticeInfo")
+    public Map getAllNoticeInfo(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("page") == null || map.get("size") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数");
+        } else {
+            Page<Notice> page = new Page<>(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
+            Page<Notice> noticePage = noticeMapper.selectPage(page, new QueryWrapper<>(null));
+            Integer allCount = noticeMapper.selectCount(new QueryWrapper<>(null));
+            map1.put("code", 200);
+            map1.put("noticeInfo", noticePage.getRecords());
+            map1.put("count", allCount);
+        }
+        return map1;
+    }
+
+
+    //    添加公告
+    @LoginToken
+    @PostMapping("/api/addNotice")
+    public Map addNotice(@RequestBody Map list, HttpServletRequest request) throws IOException {
+        Map map1 = new HashMap();
+        if (list.get("isAll") == null || list.get("thyme") == null || list.get("content") == null
+                || list.get("startTime") == null || list.get("endTime") == null || list.get("postMan") == null || list.get("postTime") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数");
+        } else {
+            if (Boolean.parseBoolean(list.get("isAll").toString())) {
+//全部公告
+                Notice notice = new Notice();
+                notice.setContent(list.get("content").toString());
+                notice.setIsAll("true");
+                notice.setThyme(list.get("thyme").toString());
+                notice.setStartTime(list.get("startTime").toString());
+                notice.setEndTime(list.get("endTime").toString());
+                notice.setPostMan(list.get("postMan").toString());
+                notice.setPostTime(list.get("postTime").toString());
+                int insert = noticeMapper.insert(notice);
+                if (insert > 0) {
+                    map1.put("code", 200);
+                    map1.put("msg", "添加公告成功!");
+                }
+            } else {
+                JSONArray array = JSON.parseArray(JSON.toJSONString(list.get("specialArray")));
+                int count = 0, successCount = 0;
+                for (Object i : array) {
+                    count++;
+                    Map selectMap = (Map) i;
+//           支线插入操作
+                    Notice notice = new Notice();
+                    notice.setContent(list.get("content").toString());
+                    notice.setIsAll("false");
+                    notice.setThyme(list.get("thyme").toString());
+                    notice.setSpecialDno(Integer.parseInt(selectMap.get("dno").toString()));
+                    notice.setSpecialDeptId(Integer.parseInt(selectMap.get("value").toString()));
+                    notice.setStartTime(list.get("startTime").toString());
+                    notice.setEndTime(list.get("endTime").toString());
+                    notice.setPostMan(list.get("postMan").toString());
+                    notice.setPostTime(list.get("postTime").toString());
+                    int insert = noticeMapper.insert(notice);
+                    if (insert > 0) {
+                        successCount++;
+                    }
+                }
+                if (count == successCount) {
+                    map1.put("code", 200);
+                    map1.put("msg", "添加公告成功!");
+                } else {
+                    map1.put("code", 202);
+                    map1.put("msg", "部分部门公告添加失败!");
+                }
+            }
+
+        }
+
+        return map1;
+    }
+
+    //    删除公告
+    @LoginToken
+    @PostMapping("/api/deleteNotice")
+    public Map deleteNoticeInfo(@RequestBody Map map) {
+        Map map1 = new HashMap();
+        if (map.get("id") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数");
+        } else {
+            int delete = noticeMapper.delete(new UpdateWrapper<Notice>().eq("id", Integer.parseInt(map.get("id").toString())));
+            if (delete > 0) {
+                map1.put("code", 200);
+                map1.put("msg", "删除公告成功!");
+            } else {
+                map1.put("code", 202);
+                map1.put("msg", "删除公告失败!");
+            }
+        }
+        return map1;
+    }
+
 }
