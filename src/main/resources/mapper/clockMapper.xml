@@ -13,11 +13,11 @@ SELECT * FROM `clockemploye` where employeno=#{employeno} and DATE_FORMAT(clockT
     </select>
     <select id="getTodayMorningInfo" resultType="java.util.HashMap">
 SELECT d.dno,d.`explain`,d.avatar,d.count,d.dname,d.groupCount,cd.clockDay,cd.allClockAfter,cd.allClockMorning,c.clockTime,count(DISTINCT c.employeno)as clockNum from clockemploye c,depall d,clockdepall cd WHERE to_days(c.clockTime) =to_days(NOW()) AND type="上午"
-AND c.dno=d.dno  AND c.dno=cd.dno AND to_days(cd.clockDay) =to_days(NOW()) GROUP BY c.dno    </select>
+AND c.dno=d.dno  AND c.dno=cd.dno AND to_days(cd.clockDay) =to_days(NOW()) GROUP BY c.dno  order by  clockDay desc  </select>
 
     <select id="getTodayAfterInfo" resultType="java.util.HashMap">
 SELECT d.dno,d.`explain`,d.avatar,d.count,d.dname,d.groupCount,cd.clockDay,cd.allClockAfter,cd.allClockMorning,c.clockTime,count(DISTINCT c.employeno)as clockNum from clockemploye c,depall d,clockdepall cd WHERE to_days(c.clockTime) =to_days(NOW()) AND type="下午"
-AND c.dno=d.dno  AND c.dno=cd.dno AND to_days(cd.clockDay) =to_days(NOW()) GROUP BY c.dno
+AND c.dno=d.dno  AND c.dno=cd.dno AND to_days(cd.clockDay) =to_days(NOW()) GROUP BY c.dno order by  clockDay desc
     </select>
     <select id="getMonthClockCount" resultType="Integer">
 select count(employeno)from clockemploye where DATE_FORMAT(clockTime,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m');
@@ -26,7 +26,7 @@ select count(employeno)from clockemploye where DATE_FORMAT(clockTime,'%Y%m')=DAT
 SELECT count(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')>'09:00:00' AND type="上午" AND DATE_FORMAT(clockTime,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m');
     </select>
     <select id="getTodayAllClockInfo" resultType="java.util.HashMap">
-SELECT cd.clockDay,cd.dno,cd.allClockAfter,cd.allClockMorning from clockdepall cd WHERE TO_DAYS(clockDay)=TO_DAYS(NOW());
+SELECT cd.clockDay,cd.dno,cd.allClockAfter,cd.allClockMorning from clockdepall cd WHERE TO_DAYS(clockDay)=TO_DAYS(NOW()); order by  clockDay desc
     </select>
 
     <select id="getClockDelayCount" resultType="Integer">
@@ -45,19 +45,19 @@ SELECT COUNT(employeno) FROM clockemploye WHERE TO_DAYS(clockTime) = TO_DAYS(NOW
 SELECT COUNT(employeno) FROM clockemploye WHERE DATE_FORMAT(clockTime,'%T')	>	'09:00:00' AND type="上午" AND TO_DAYS(clockTime) = TO_DAYS(NOW());
  </select>
     <select id="getTodayNormalClockInfo" resultType="java.util.HashMap">
-        SELECT * FROM `clockemploye` WHERE '09:00:00'>DATE_FORMAT(clockTime,"%T") AND type="上午" AND TO_DAYS(clockTime) =TO_DAYS(NOW()) limit #{page},#{size}
+        SELECT * FROM `clockemploye` WHERE '09:00:00'>DATE_FORMAT(clockTime,"%T") AND type="上午" AND TO_DAYS(clockTime) =TO_DAYS(NOW()) order by  clockTime desc limit #{page},#{size}
     </select>
 
     <select id="getTodayClockEmployeInfoPage" resultType="java.util.HashMap">
 select e.employname,e.employno,D.dname,dp.deptname,c.clockTime,c.type from clockemploye c,employee e,depall d,dept dp WHERE TO_DAYS(clockTime)=TO_DAYS(NOW())AND c.dno=#{dno}
- AND e.employno=c.employeno AND c.dno=d.dno AND d.dno=dp.deptno AND c.deptid=dp.id AND dp.id=e.deptno AND type=#{type} limit #{page},#{size}
+ AND e.employno=c.employeno AND c.dno=d.dno AND d.dno=dp.deptno AND c.deptid=dp.id AND dp.id=e.deptno AND type=#{type} order by  clockTime desc limit #{page},#{size}
 
 </select>
     <select id="getTodayDelayClockInfo" resultType="java.util.HashMap">
-SELECT *FROM clockemploye WHERE TO_DAYS(clockTime)=TO_DAYS(NOW()) AND type ="上午" AND DATE_FORMAT(clockTime, '%H')>8 limit #{page},#{size}
+SELECT *FROM clockemploye WHERE TO_DAYS(clockTime)=TO_DAYS(NOW()) AND type ="上午" AND DATE_FORMAT(clockTime, '%H')>8 order by  clockTime desc limit #{page},#{size}
 </select>
     <select id="getTodayLeaveInfo" resultType="java.util.HashMap">
-SELECT * FROM `leaverequest` where TO_DAYS(leaveWhen) =TO_DAYS(NOW())limit #{page},#{size}
+SELECT * FROM `leaverequest` where TO_DAYS(leaveWhen) =TO_DAYS(NOW()) order by  leaveWhen desc limit #{page},#{size}
 </select>
 
 

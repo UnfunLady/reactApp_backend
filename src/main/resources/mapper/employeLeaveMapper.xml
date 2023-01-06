@@ -6,7 +6,7 @@
     <!--    配置查询所有 id为方法名 resultType指定封装的实体类型-->
     <select id="getDepallByEmployno" resultType="java.util.HashMap">
    SELECT d.dno,d.dname,de.id,(select DISTINCT(employname) from employee WHERE employno=#{employeno})as employename FROM `depall` d ,dept de where dno in (select deptno from dept where id in (select deptno from employee WHERE employno=#{employeno}))
-   and de.id in(select deptno from employee where employno=#{employeno}) AND de.deptno=d.dno
+   and de.id in(select deptno from employee where employno=#{employeno}) AND de.deptno=d.dno 
     </select>
     <select id="getDeptByEmploynoAndDno" resultType="java.util.HashMap">
 select d.id,d.deptname from dept d where    d.deptno=#{dno} AND d.id in(select deptno from employee WHERE employno=#{employeno})

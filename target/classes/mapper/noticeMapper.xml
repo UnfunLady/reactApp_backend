@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.webapp.mapper.noticeMapper">
+
+    <select id="getNoticeBykeyWordPage" resultType="java.util.HashMap">
+select *from notice where  (thyme like concat('%',#{keyword},'%')OR content like concat('%',#{keyword},'%')) limit #{limit},#{size}
+    </select>
+    <select id="getNoticeCountByKeyWord" resultType="Integer">
+select count(*)from notice where  (thyme like concat('%',#{keyword},'%')OR content like concat('%',#{keyword},'%'))
+    </select>
+    <select id="getNoticeEmploye" resultType="java.util.HashMap">
+SELECT n.* FROM `notice` n WHERE ( isAll="false"  AND n.specialDeptId in(select deptno from employee where employno=#{employeno})) limit #{limit},#{size}
+ </select>
+    <select id="getSpecialNoticeCount" resultType="Integer">
+SELECT count(*) FROM `notice` n WHERE ( isAll="false"  AND n.specialDeptId in(select deptno from employee where employno=#{employeno}))
+ </select>
+    <select id="getTodayNoticeEmploye" resultType="java.util.HashMap">
+SELECT * FROM `notice` n WHERE (TO_DAYS(postTime)=TO_DAYS(NOW()) AND n.specialDeptId in(select deptno from employee where employno=#{employeno}))
+UNION SELECT * FROM `notice` n WHERE (TO_DAYS(postTime)=TO_DAYS(NOW()) AND isAll="true")
+ </select>
+
+</mapper>
+

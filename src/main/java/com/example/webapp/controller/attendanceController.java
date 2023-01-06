@@ -225,7 +225,7 @@ public class attendanceController {
             map1.put("msg", "缺少请求参数");
         } else {
             Page<EmployeLeave> Page = new Page<>(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
-            Page<EmployeLeave> deptRedoPage = employeLeaveMapper.selectPage(Page, new QueryWrapper<>(null));
+            Page<EmployeLeave> deptRedoPage = employeLeaveMapper.selectPage(Page, new QueryWrapper<EmployeLeave>().orderByDesc("leaveWhen"));
             List<EmployeLeave> employeLeaves = deptRedoPage.getRecords();
             Integer selectCount = employeLeaveMapper.selectCount(new QueryWrapper<>(null));
             if (employeLeaves != null && employeLeaves.size() > 0) {
@@ -488,12 +488,12 @@ public class attendanceController {
         } else {
             if (Boolean.parseBoolean(map1.get("isDepall").toString())) {
 //                获取部门全部数据
-                List<ClockInfo> depallClockInfo = clockMapper.selectList(new QueryWrapper<ClockInfo>().eq("dno", map1.get("dno")));
+                List<ClockInfo> depallClockInfo = clockMapper.selectList(new QueryWrapper<ClockInfo>().eq("dno", map1.get("dno")).orderByDesc("clockTime"));
                 map.put("code", 200);
                 map.put("ClockInfo", depallClockInfo);
                 map.put("count", depallClockInfo.size());
             } else {
-                List<ClockInfo> deptClockInfo = clockMapper.selectList(new QueryWrapper<ClockInfo>().eq("dno", map1.get("dno")).eq("deptid", map1.get("deptId")));
+                List<ClockInfo> deptClockInfo = clockMapper.selectList(new QueryWrapper<ClockInfo>().eq("dno", map1.get("dno")).eq("deptid", map1.get("deptId")).orderByDesc("clockTime"));
                 map.put("code", 200);
                 map.put("ClockInfo", deptClockInfo);
                 map.put("count", deptClockInfo.size());
@@ -533,7 +533,7 @@ public class attendanceController {
         return map;
     }
 
-    //    获取全部公告信息
+    //   删除图片
     @LoginToken
     @PostMapping("/api/deleteNoticeImage")
     public Map deleteNoticeImage(@RequestBody Map<String, List<String>> list, HttpServletRequest request) throws IOException {
@@ -600,7 +600,7 @@ public class attendanceController {
         return map1;
     }
 
-    //删除多余图片
+    //获取公告信息
     @LoginToken
     @GetMapping("/api/getAllNoticeInfo")
     public Map getAllNoticeInfo(@RequestParam Map map) {
@@ -610,7 +610,7 @@ public class attendanceController {
             map1.put("msg", "缺少重要参数");
         } else {
             Page<Notice> page = new Page<>(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
-            Page<Notice> noticePage = noticeMapper.selectPage(page, new QueryWrapper<>(null));
+            Page<Notice> noticePage = noticeMapper.selectPage(page, new QueryWrapper<Notice>().orderByDesc("postTime"));
             Integer allCount = noticeMapper.selectCount(new QueryWrapper<>(null));
             map1.put("code", 200);
             map1.put("noticeInfo", noticePage.getRecords());
@@ -698,6 +698,55 @@ public class attendanceController {
                 map1.put("code", 202);
                 map1.put("msg", "删除公告失败!");
             }
+        }
+        return map1;
+    }
+
+    //    关键字查找公告分页
+    @LoginToken
+    @GetMapping("/api/getNoticeByKeyWord")
+    public Map getNoticeByKeyWord(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("page") == null || map.get("size") == null || map.get("keyWord") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数");
+        } else {
+            int limit = (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString());
+            List<Map<String, String>> noticeInfo = noticeMapper.getNoticeBykeyWordPage(map.get("keyWord").toString(), limit, Integer.parseInt(map.get("size").toString()));
+            Integer count = noticeMapper.getNoticeCountByKeyWord(map.get("keyWord").toString());
+            map1.put("code", 200);
+            map1.put("noticeInfo", noticeInfo);
+            map1.put("count", count);
+
+        }
+        return map1;
+    }
+
+
+    //    分页获取公告 ---员工
+    @LoginEmployeToken
+    @GetMapping("/api/getNoticeEmploye")
+    public Map getNoticeEmploye(@RequestParam Map map) {
+        Map map1 = new HashMap();
+        if (map.get("page") == null || map.get("size") == null || map.get("employeno") == null) {
+            map1.put("code", 202);
+            map1.put("msg", "缺少重要参数");
+        } else {
+            Page<Notice> page = new Page<>(Integer.parseInt(map.get("page").toString()), Integer.parseInt(map.get("size").toString()));
+            Page<Notice> noticeAllInfo = noticeMapper.selectPage(page, new QueryWrapper<Notice>().orderByDesc("postTime").eq("isAll", "true"));
+            int limit = (Integer.parseInt(map.get("page").toString()) - 1) * Integer.parseInt(map.get("size").toString());
+            List<Map<String, String>> noticeEmploye = noticeMapper.getNoticeEmploye(Integer.parseInt(map.get("employeno").toString()), limit, Integer.parseInt(map.get("size").toString()));
+            List<Map<String, String>> todayNoticeInfo = noticeMapper.getTodayNoticeEmploye(Integer.parseInt(map.get("employeno").toString()));
+            Integer allNoticeCount = noticeMapper.selectCount(new QueryWrapper<Notice>().eq("isAll", "true"));
+            Integer specialNoticeCount = noticeMapper.getSpecialNoticeCount(Integer.parseInt(map.get("employeno").toString()));
+
+            map1.put("code", 200);
+            map1.put("allNotice", noticeAllInfo.getRecords());
+            map1.put("specialNotice", noticeEmploye);
+            map1.put("todayNoticeInfo", todayNoticeInfo);
+            map1.put("allNoticeCount", allNoticeCount);
+            map1.put("specialNoticeCount", specialNoticeCount);
+            map1.put("todayNoticeInfoCount", todayNoticeInfo.size());
         }
         return map1;
     }
