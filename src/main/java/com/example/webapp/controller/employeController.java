@@ -160,13 +160,13 @@ public class employeController {
                         if (employe1 != null) {
                             Eusers eusers = new Eusers();
                             eusers.setUsername(employe1.getEmployno().toString());
+
                             int insert1 = euserMapper.insert(eusers);
                             if (insert1 > 0) {
                                 map1.put("code", 200);
                                 map1.put("msg", "添加员工成功！");
                             }
                         } else {
-
                             map1.put("code", 202);
                             map1.put("msg", "添加员工账号失败请联系管理员！");
                         }

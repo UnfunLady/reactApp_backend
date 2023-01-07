@@ -552,8 +552,6 @@ public class attendanceController {
                 }
             }
         }
-        System.out.println(count);
-        System.out.println(deleteCount);
         if (count == deleteCount) {
             map1.put("code", 200);
             map1.put("msg", "删除多余图片成功!");
@@ -640,11 +638,19 @@ public class attendanceController {
                 notice.setEndTime(list.get("endTime").toString());
                 notice.setPostMan(list.get("postMan").toString());
                 notice.setPostTime(list.get("postTime").toString());
-                int insert = noticeMapper.insert(notice);
-                if (insert > 0) {
-                    map1.put("code", 200);
-                    map1.put("msg", "添加公告成功!");
+                try{
+                    int insert = noticeMapper.insert(notice);
+                    if (insert > 0) {
+                        map1.put("code", 200);
+                        map1.put("msg", "添加公告成功!");
+                    }
+                }catch (Exception e){
+                    map1.put("code", 202);
+                    map1.put("msg", "添加公告失败!");
+                    map1.put("Exception", e.toString());
                 }
+
+
             } else {
                 JSONArray array = JSON.parseArray(JSON.toJSONString(list.get("specialArray")));
                 int count = 0, successCount = 0;

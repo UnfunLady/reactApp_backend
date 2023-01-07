@@ -120,6 +120,7 @@ public class userController {
         return map1;
     }
 
+    //    修改信息 无头像
     @LoginToken
     @PostMapping("/api/editUserInfoNoAvatar")
     public Map editUserInfoNoAvatar(@RequestBody Map map) {
