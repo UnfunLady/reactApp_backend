@@ -113,7 +113,7 @@ public class attendanceController {
     public Map addLeave(@RequestBody Map map1) {
         Map map = new HashMap<>();
         if (map1.get("deptid") == null || map1.get("dno") == null || map1.get("employename") == null || map1.get("employeno") == null ||
-                map1.get("leaveLong") == null || map1.get("leaveWhen") == null || map1.get("whyLeave") == null) {
+                map1.get("leaveLong") == null || map1.get("leaveWhen") == null || map1.get("whyLeave") == null|| map1.get("postTime") == null) {
             map.put("code", 202);
             map.put("msg", "缺少请求参数");
         } else {
@@ -125,6 +125,7 @@ public class attendanceController {
             employeLeave.setLeaveWhen(map1.get("leaveWhen").toString());
             employeLeave.setWhyLeave(map1.get("whyLeave").toString());
             employeLeave.setEmployename(map1.get("employename").toString());
+            employeLeave.setPostTime(map1.get("postTime").toString());
             int insert = employeLeaveMapper.insert(employeLeave);
             if (insert > 0) {
                 map.put("code", 200);

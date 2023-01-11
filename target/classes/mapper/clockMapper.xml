@@ -57,7 +57,7 @@ select e.employname,e.employno,D.dname,dp.deptname,c.clockTime,c.type from clock
 SELECT *FROM clockemploye WHERE TO_DAYS(clockTime)=TO_DAYS(NOW()) AND type ="上午" AND DATE_FORMAT(clockTime, '%H')>8 order by  clockTime desc limit #{page},#{size}
 </select>
     <select id="getTodayLeaveInfo" resultType="java.util.HashMap">
-SELECT * FROM `leaverequest` where TO_DAYS(leaveWhen) =TO_DAYS(NOW()) order by  leaveWhen desc limit #{page},#{size}
+SELECT * FROM `leaverequest` where TO_DAYS(postTime) =TO_DAYS(NOW()) order by  postTime desc limit #{page},#{size}
 </select>
 
 

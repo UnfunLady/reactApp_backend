@@ -21,4 +21,5 @@ public class EmployeLeave {
     private Integer dno;
     private String whichVerfiy;
     private String employename;
+    private String postTime;
 }
