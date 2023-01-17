@@ -67,7 +67,6 @@ public class deptController {
         detailData.put("BoyGrilsPercentage", Percentage);
         map.put("code", 200);
         map.put("detailData", detailData);
-
         return map;
     }
 
@@ -367,7 +366,6 @@ public class deptController {
     @PostMapping("/api/editGroupInfo")
     public Map editGroupInfo(@RequestBody Map map) {
         Map map1 = new HashMap();
-        System.out.println(map);
         if (map.get("id") == null || map.get("deptname") == null || map.get("updateName") == null || map.get("location") == null || map.get("count") == null) {
             map1.put("code", 202);
             map1.put("msg", "缺少重要参数");
@@ -388,7 +386,9 @@ public class deptController {
                     }
                 }
             } else {
-                Boolean update = deptService.update(new UpdateWrapper<Dept>().set("deptname", map.get("deptname")).set("location", map.get("location")).set("count", map.get("count")).eq("id", map.get("id")));
+                Boolean update = deptService.update(new UpdateWrapper<Dept>().
+                        set("deptname", map.get("deptname")).set("location", map.get("location"))
+                        .set("count", map.get("count")).eq("id", map.get("id")));
                 if (update) {
                     map1.put("code", 200);
                     map1.put("msg", "修改小组信息成功");

@@ -113,7 +113,7 @@ public class attendanceController {
     public Map addLeave(@RequestBody Map map1) {
         Map map = new HashMap<>();
         if (map1.get("deptid") == null || map1.get("dno") == null || map1.get("employename") == null || map1.get("employeno") == null ||
-                map1.get("leaveLong") == null || map1.get("leaveWhen") == null || map1.get("whyLeave") == null|| map1.get("postTime") == null) {
+                map1.get("leaveLong") == null || map1.get("leaveWhen") == null || map1.get("whyLeave") == null || map1.get("postTime") == null) {
             map.put("code", 202);
             map.put("msg", "缺少请求参数");
         } else {
@@ -291,7 +291,12 @@ public class attendanceController {
             int allClockCount = clockMapper.getTodayClockCount();
             NumberFormat numberFormat = NumberFormat.getInstance();
             numberFormat.setMaximumFractionDigits(2);
-            String Percentage = numberFormat.format((float) delayCount / (float) todayMorningCount * 100) + "%";
+            String Percentage = "";
+            if (delayCount > 0 && todayMorningCount > 0) {
+                Percentage = numberFormat.format((float) delayCount / (float) todayMorningCount * 100) + "%";
+            } else {
+                Percentage = "0%";
+            }
             map.put("code", 200);
             map.put("todayAllInfo", todayAllInfo);
             map.put("AllClockCount", allClockCount);
@@ -639,13 +644,13 @@ public class attendanceController {
                 notice.setEndTime(list.get("endTime").toString());
                 notice.setPostMan(list.get("postMan").toString());
                 notice.setPostTime(list.get("postTime").toString());
-                try{
+                try {
                     int insert = noticeMapper.insert(notice);
                     if (insert > 0) {
                         map1.put("code", 200);
                         map1.put("msg", "添加公告成功!");
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     map1.put("code", 202);
                     map1.put("msg", "添加公告失败!");
                     map1.put("Exception", e.toString());
